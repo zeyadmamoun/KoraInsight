@@ -1,11 +1,7 @@
 plugins {
-    id("koraInsight.android.library")
+    id("koraInsight.android.library.compose")
 }
 
 android {
     namespace = "com.zeyadmamoun.leagues"
-}
-
-dependencies {
-    implementation(libs.material)
-}
+}
