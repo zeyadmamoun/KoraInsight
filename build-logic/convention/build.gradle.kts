@@ -16,5 +16,10 @@ gradlePlugin {
             id = "koraInsight.android.application"
             implementationClass = "AndroidApplicationConventionPlugin"
         }
+
+        register("androidLibrary"){
+            id = "koraInsight.android.library"
+            implementationClass = "AndroidLibraryConventionPlugin"
+        }
     }
 }
