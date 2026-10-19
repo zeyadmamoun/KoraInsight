@@ -31,5 +31,10 @@ gradlePlugin {
             id = "koraInsight.android.library.compose"
             implementationClass = "AndroidLibraryComposeConventionPlugin"
         }
+
+        register("androidFeature"){
+            id = "koraInsight.android.feature"
+            implementationClass = "AndroidFeatureConventionPlugin"
+        }
     }
 }

@@ -98,10 +98,10 @@ fun FloatingBottomNavBar(
             .fillMaxWidth()
             .padding(horizontal = 24.dp, vertical = 12.dp)
             .shadow(
-                elevation = 16.dp,
+                elevation = 24.dp,
                 shape = RoundedCornerShape(32.dp),
-                spotColor = Color(0x1F000000),
-                ambientColor = Color(0x0A000000)
+                spotColor = Color(0x46000000),
+                ambientColor = Color(0xB9000000)
             ),
         shape = RoundedCornerShape(32.dp),
         color = containerColor,
