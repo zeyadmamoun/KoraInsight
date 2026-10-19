@@ -9,35 +9,50 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    primary = BluePrimaryDark,
+    onPrimary = Color(0xFF0F1E40),
+    primaryContainer = BluePrimaryContainerDark,
+    onPrimaryContainer = OnBluePrimaryContainerDark,
+    secondary = CoralSecondaryDark,
+    onSecondary = Color(0xFF400A13),
+    secondaryContainer = CoralSecondaryContainerDark,
+    onSecondaryContainer = OnCoralSecondaryContainerDark,
+    background = AppBackgroundDark,
+    onBackground = DarkOnSurfaceDark,
+    surface = CardSurfaceDark,
+    onSurface = DarkOnSurfaceDark,
+    surfaceVariant = PillSurfaceVariantDark,
+    onSurfaceVariant = SlateOnSurfaceVariantDark,
+    outline = OutlineSubtleDark
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
+    primary = BluePrimary,
     onPrimary = Color.White,
+    primaryContainer = BluePrimaryContainer,
+    onPrimaryContainer = OnBluePrimaryContainer,
+    secondary = CoralSecondary,
     onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+    secondaryContainer = CoralSecondaryContainer,
+    onSecondaryContainer = OnCoralSecondaryContainer,
+    background = AppBackground,
+    onBackground = DarkOnSurface,
+    surface = CardSurface,
+    onSurface = DarkOnSurface,
+    surfaceVariant = PillSurfaceVariant,
+    onSurfaceVariant = SlateOnSurfaceVariant,
+    outline = OutlineSubtle
 )
 
 @Composable
 fun KoraInsightTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    // Default to false so the custom brand colors are displayed on Android 12+
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
