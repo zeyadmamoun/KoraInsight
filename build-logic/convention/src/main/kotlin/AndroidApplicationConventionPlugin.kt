@@ -39,9 +39,16 @@ class AndroidApplicationConventionPlugin: Plugin<Project> {
             val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
             dependencies.apply {
                 add("implementation", libs.findLibrary("androidx-core-ktx").get())
+                add("implementation", libs.findLibrary("androidx-navigation3-runtime").get())
+                add("implementation", libs.findLibrary("androidx-navigation3-ui").get())
                 add("testImplementation", libs.findLibrary("junit").get())
                 add("androidTestImplementation", libs.findLibrary("androidx-junit").get())
                 add("androidTestImplementation", libs.findLibrary("androidx-espresso-core").get())
+
+                // module dependency here
+                add("implementation", project(":feature:fixtures"))
+                add("implementation", project(":feature:leagues"))
+                add("implementation", project(":feature:profile"))
             }
         }
     }

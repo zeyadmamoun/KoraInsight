@@ -9,3 +9,8 @@ build/
 .externalNativeBuild
 .cxx
 local.properties
+
+# Local Documentation & AI Agent / Knowledge Graph artifacts
+/docs.json
+/.agents/
+/graphify-out/

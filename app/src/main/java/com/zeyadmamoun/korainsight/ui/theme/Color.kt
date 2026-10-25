@@ -4,7 +4,7 @@ import androidx.compose.ui.graphics.Color
 
 // Primary Brand Blue (Header cards, active tabs, scores, primary buttons)
 val BluePrimary = Color(0xFF3463CC)
-val BluePrimaryContainer = Color(0xFFE8EEFC)
+val BluePrimaryContainer = Color(0xFFD7E4FF)
 val OnBluePrimaryContainer = Color(0xFF1E3A8A)
 
 // Secondary Accent Coral / Red (Opposition stats, alerts, live status)

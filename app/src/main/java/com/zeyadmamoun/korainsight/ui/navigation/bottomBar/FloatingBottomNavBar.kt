@@ -1,4 +1,4 @@
-package com.zeyadmamoun.korainsight.ui.navigation
+package com.zeyadmamoun.korainsight.ui.navigation.bottomBar
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
@@ -11,23 +11,18 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.outlined.DateRange
-import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -50,36 +45,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 /**
- * Model representing a bottom navigation item.
- */
-data class BottomNavItem(
-    val title: String,
-    val selectedIcon: ImageVector,
-    val unselectedIcon: ImageVector,
-)
-
-/**
- * Default items for Matches, Leagues, and Profile tabs.
- */
-val defaultBottomNavItems = listOf(
-    BottomNavItem(
-        title = "Matches",
-        selectedIcon = Icons.Filled.DateRange,
-        unselectedIcon = Icons.Outlined.DateRange,
-    ),
-    BottomNavItem(
-        title = "Leagues",
-        selectedIcon = Icons.Filled.Star,
-        unselectedIcon = Icons.Outlined.Star,
-    ),
-    BottomNavItem(
-        title = "Profile",
-        selectedIcon = Icons.Filled.Person,
-        unselectedIcon = Icons.Outlined.Person,
-    ),
-)
-
-/**
  * Dynamic animated floating bottom navigation bar.
  */
 @Composable
@@ -90,13 +55,14 @@ fun FloatingBottomNavBar(
     onItemSelected: (Int) -> Unit = {},
     containerColor: Color = MaterialTheme.colorScheme.surface,
     activePillColor: Color = MaterialTheme.colorScheme.primaryContainer,
-    activeContentColor: Color = MaterialTheme.colorScheme.primary,
+    activeContentColor: Color = if (isSystemInDarkTheme()) Color.White else MaterialTheme.colorScheme.primary,
     inactiveContentColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
 ) {
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 12.dp)
+            .navigationBarsPadding()
+            .padding(horizontal = 16.dp, vertical = 12.dp)
             .shadow(
                 elevation = 24.dp,
                 shape = RoundedCornerShape(32.dp),
@@ -105,7 +71,7 @@ fun FloatingBottomNavBar(
             ),
         shape = RoundedCornerShape(32.dp),
         color = containerColor,
-        tonalElevation = 4.dp
+        tonalElevation = 0.dp
     ) {
         Row(
             modifier = Modifier
@@ -192,8 +158,7 @@ private fun BottomNavItemView(
                     Text(
                         text = item.title,
                         color = contentColor,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 14.sp,
+                        style = MaterialTheme.typography.labelMedium,
                         maxLines = 1
                     )
                 }
