@@ -5,6 +5,8 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.VersionCatalogsExtension
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.getByType
+import org.gradle.kotlin.dsl.withType
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 class AndroidLibraryConventionPlugin: Plugin<Project> {
 
@@ -30,10 +32,17 @@ class AndroidLibraryConventionPlugin: Plugin<Project> {
                 }
             }
 
+            tasks.withType<KotlinCompile>().configureEach {
+                compilerOptions {
+                    optIn.add("kotlin.time.ExperimentalTime")
+                }
+            }
+
             val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
             dependencies.apply {
                 add("implementation", libs.findLibrary("androidx-core-ktx").get())
                 add("implementation", libs.findLibrary("androidx-appcompat").get())
+                add("implementation", libs.findLibrary("kotlinx-datetime").get())
                 add("testImplementation", libs.findLibrary("junit").get())
                 add("androidTestImplementation", libs.findLibrary("androidx-junit").get())
                 add("androidTestImplementation", libs.findLibrary("androidx-espresso-core").get())

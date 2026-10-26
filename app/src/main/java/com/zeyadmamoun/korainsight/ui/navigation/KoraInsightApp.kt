@@ -34,7 +34,9 @@ fun KoraInsightApp(
             }
         }
     ) { innerPadding ->
-        println(innerPadding)
-        KoraInsightNavDisplay(backStack = appState.backStack)
+        KoraInsightNavDisplay(
+            backStack = appState.backStack,
+            paddingValues = innerPadding
+        )
     }
 }
