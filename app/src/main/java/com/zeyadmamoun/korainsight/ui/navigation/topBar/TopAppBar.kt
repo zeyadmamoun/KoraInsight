@@ -32,6 +32,7 @@ fun KoraInsightsAppBar(
     notificationIconClicked: () -> Unit = {}
 ){
     TopAppBar(
+        colors = TopAppBarDefaults.topAppBarColors(),
         title = {
             KoraInsightsLogo()
         },
