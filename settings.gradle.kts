@@ -29,6 +29,8 @@ rootProject.name = "KoraInsight"
 include(":app")
 include(":feature")
 include(":core")
+include(":core:common")
 include(":feature:leagues")
 include(":feature:fixtures")
 include(":feature:profile")
+include(":core:network")

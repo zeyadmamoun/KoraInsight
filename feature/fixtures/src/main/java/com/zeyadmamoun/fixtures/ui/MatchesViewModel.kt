@@ -1,7 +1,7 @@
 package com.zeyadmamoun.fixtures.ui
 
 import androidx.lifecycle.ViewModel
-import com.zeyadmamoun.core.datetime.today
+import com.zeyadmamoun.core.common.datetime.today
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.datetime.LocalDate

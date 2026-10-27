@@ -7,6 +7,6 @@ android {
 }
 
 dependencies {
-    api(libs.kotlinx.datetime)
+    api(project(":core:common"))
     implementation(libs.material)
 }

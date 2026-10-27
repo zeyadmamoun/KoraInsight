@@ -42,7 +42,6 @@ class AndroidLibraryConventionPlugin: Plugin<Project> {
             dependencies.apply {
                 add("implementation", libs.findLibrary("androidx-core-ktx").get())
                 add("implementation", libs.findLibrary("androidx-appcompat").get())
-                add("implementation", libs.findLibrary("kotlinx-datetime").get())
                 add("testImplementation", libs.findLibrary("junit").get())
                 add("androidTestImplementation", libs.findLibrary("androidx-junit").get())
                 add("androidTestImplementation", libs.findLibrary("androidx-espresso-core").get())

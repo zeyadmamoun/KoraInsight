@@ -1,4 +1,4 @@
-package com.zeyadmamoun.core.datetime
+package com.zeyadmamoun.core.common.datetime
 
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime

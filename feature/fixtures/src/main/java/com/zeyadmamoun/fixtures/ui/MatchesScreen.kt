@@ -25,7 +25,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.zeyadmamoun.core.datetime.toRelativeChipString
+import com.zeyadmamoun.core.common.datetime.toRelativeChipString
 import kotlinx.datetime.LocalDate
 
 @Composable
