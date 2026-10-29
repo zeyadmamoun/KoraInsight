@@ -1,9 +1,13 @@
 package com.zeyadmamoun.fixtures.ui
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.zeyadmamoun.core.common.datetime.today
+import com.zeyadmamoun.network.ktor.KtorClient
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
@@ -47,6 +51,13 @@ class MatchesViewModel: ViewModel() {
         } else if (selectedDayIndex <= 1){
             val lastDay = _nearbyDays.value.first()
             _nearbyDays.value.addAll(0,getFivePreviousDays(lastDay))
+        }
+    }
+
+    fun getLeagues(){
+        viewModelScope.launch {
+            val data = KtorClient().getLeagues()
+            Log.d("MatchesVm", data.toString())
         }
     }
 }

@@ -10,4 +10,5 @@ android {
 
 dependencies {
     implementation(libs.material)
+    implementation(project(":core:network"))
 }

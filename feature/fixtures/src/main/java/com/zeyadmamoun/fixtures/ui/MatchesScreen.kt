@@ -35,6 +35,10 @@ fun MatchesScreen(
     val daysList by viewModel.nearbyDays.collectAsStateWithLifecycle()
     val selectedDay by viewModel.selectedDay.collectAsStateWithLifecycle()
 
+    LaunchedEffect(Unit) {
+        viewModel.getLeagues()
+    }
+
     Column(
         modifier = Modifier
             .padding(8.dp)
