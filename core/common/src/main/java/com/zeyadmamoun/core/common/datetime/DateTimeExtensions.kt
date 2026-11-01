@@ -23,6 +23,13 @@ fun LocalDate.toApiDateString(): String {
 }
 
 /**
+ * Formats this [LocalDate] to the compact "yyyyMMdd" string (e.g. for ESPN API queries `?dates=yyyyMMdd`).
+ */
+fun LocalDate.toCompactDateString(): String {
+    return format(DateFormats.BASIC_ISO_DATE)
+}
+
+/**
  * Returns date formatted for navigation chips [dayOfTheWeek, monthName dayOfMonth]
  * (e.g. "Sun, Oct 25"). Uses pre-allocated [DateFormats.CHIP_DATE].
  */

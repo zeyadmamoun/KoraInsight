@@ -16,6 +16,21 @@ object DateFormats {
     val ISO_DATE = LocalDate.Formats.ISO
 
     /**
+     * ISO-8601 basic compact date format: "yyyyMMdd" (e.g., "20261101").
+     * Used for ESPN API queries (e.g. `/scoreboard?dates=yyyyMMdd`) and compact date parameters.
+     */
+    val BASIC_ISO_DATE = LocalDate.Format {
+        year()
+        monthNumber()
+        day()
+    }
+
+    /**
+     * Alias for [BASIC_ISO_DATE] ("yyyyMMdd").
+     */
+    val COMPACT_DATE = BASIC_ISO_DATE
+
+    /**
      * Chip date format: "EEE, MMM d" (e.g., "Sun, Oct 25").
      * Pre-allocated to avoid constructing formatter builders on every recomposition.
      */

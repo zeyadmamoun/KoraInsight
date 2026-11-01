@@ -1,141 +1,143 @@
 package com.zeyadmamoun.fixtures.ui
 
-import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.ElevatedAssistChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.zeyadmamoun.core.common.datetime.toRelativeChipString
-import kotlinx.datetime.LocalDate
+import com.zeyadmamoun.fixtures.ui.components.DateNavigationChips
+import com.zeyadmamoun.fixtures.ui.components.LeagueDropDownScheduleCard
+import com.zeyadmamoun.fixtures.ui.components.MatchRecord
+import com.zeyadmamoun.fixtures.ui.components.matchesShimmerLoading
+import com.zeyadmamoun.fixtures.ui.components.rememberShimmerBrush
+import com.zeyadmamoun.network.model.EspnApiResponse
+import com.zeyadmamoun.network.model.EspnEventDto
 
 @Composable
 fun MatchesScreen(
     viewModel: MatchesViewModel = viewModel()
 ) {
-    val daysList by viewModel.nearbyDays.collectAsStateWithLifecycle()
-    val selectedDay by viewModel.selectedDay.collectAsStateWithLifecycle()
+    val state by viewModel.matchesUiState.collectAsStateWithLifecycle()
+    val shimmerBrush = rememberShimmerBrush()
 
-    LaunchedEffect(Unit) {
-        viewModel.getLeagues()
-    }
-
-    Column(
+    LazyColumn(
         modifier = Modifier
-            .padding(8.dp)
+            .padding(horizontal = 8.dp)
             .fillMaxSize(),
+        contentPadding = PaddingValues(bottom = 100.dp, top = 8.dp),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        DateNavigationChips(
-            daysList = daysList,
-            selectedDay = selectedDay
-        ) { day ->
-            viewModel.updateSelectedDay(day)
+        item {
+            DateNavigationChips(
+                daysList = state.nearbyDays,
+                selectedDay = state.selectedDay
+            ) { day ->
+                viewModel.updateSelectedDay(day)
+            }
+        }
+        item {
+            Spacer(Modifier.height(8.dp))
+        }
+
+        when (val status = state.networkStatus) {
+            is MatchesNetworkStatus.Loading -> {
+                matchesShimmerLoading(brush = shimmerBrush, count = 3)
+            }
+            is MatchesNetworkStatus.Success -> {
+                if (status.scoreboards.isEmpty()) {
+                    item {
+                        EmptyMatchesPlaceholder()
+                    }
+                } else {
+                    itemsIndexed(
+                        items = status.scoreboards,
+                        key = { index, scoreboard -> scoreboard.leagues.firstOrNull()?.id ?: index },
+                        contentType = { _, _ -> "league_schedule" }
+                    ) { _, scoreboard ->
+                        LeagueDropDownScheduleCard(scoreboard)
+                    }
+                }
+            }
+            is MatchesNetworkStatus.Error -> {
+                item {
+                    ErrorMatchesPlaceholder(
+                        message = status.message,
+                        onRetry = { viewModel.getScoreboards() }
+                    )
+                }
+            }
         }
     }
 }
 
 @Composable
-fun DateNavigationChips(
-    daysList: List<LocalDate>,
-    selectedDay: LocalDate,
-    onChipClicked: (LocalDate) -> Unit
-) {
-    val initialIndex = remember(selectedDay, daysList) {
-        (daysList.indexOf(selectedDay) - 1).coerceAtLeast(0)
-    }
-    val listState = rememberLazyListState(initialFirstVisibleItemIndex = initialIndex)
-
-    LaunchedEffect(selectedDay) {
-        val targetIndex = daysList.indexOf(selectedDay)
-        if (targetIndex != -1) {
-            var itemInfo = listState.layoutInfo.visibleItemsInfo.find { it.index == targetIndex }
-            if (itemInfo == null) {
-                listState.animateScrollToItem(targetIndex)
-                itemInfo = listState.layoutInfo.visibleItemsInfo.find { it.index == targetIndex }
-            }
-
-            if (itemInfo != null) {
-                val viewportWidth = listState.layoutInfo.viewportSize.width
-                val itemCenter = itemInfo.offset + (itemInfo.size / 2)
-                val viewportCenter = viewportWidth / 2
-                val scrollDelta = itemCenter - viewportCenter
-                listState.animateScrollBy(scrollDelta.toFloat())
-            }
-        }
-    }
-
-    LazyRow(
-        state = listState,
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        contentPadding = PaddingValues(horizontal = 16.dp)
+private fun EmptyMatchesPlaceholder() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 48.dp),
+        contentAlignment = Alignment.Center
     ) {
-        itemsIndexed(
-            items = daysList,
-            key = { _, day -> day.toEpochDays() },
-            contentType = { _, _ -> "date_chip" }
-        ) { _, day ->
-            DateChip(
-                day = day,
-                isSelectedProvider = { day == selectedDay },
-                onClick = { onChipClicked(day) }
-            )
-        }
+        Text(
+            text = "No matches scheduled for this date",
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 
 @Composable
-private fun DateChip(
-    day: LocalDate,
-    isSelectedProvider: () -> Boolean,
-    onClick: () -> Unit
+private fun ErrorMatchesPlaceholder(
+    message: String,
+    onRetry: () -> Unit
 ) {
-    val isSelected = isSelectedProvider()
-    ElevatedAssistChip(
-        onClick = onClick,
-        shape = RoundedCornerShape(16.dp),
-        label = {
-            Text(
-                text = day.toRelativeChipString(),
-                style = MaterialTheme.typography.labelMedium
-            )
-        },
-        colors = AssistChipDefaults.assistChipColors(
-            containerColor = if (isSelected)
-                MaterialTheme.colorScheme.primary
-            else
-                MaterialTheme.colorScheme.surface,
-            labelColor = if (isSelected)
-                MaterialTheme.colorScheme.onPrimary
-            else
-                MaterialTheme.colorScheme.onBackground
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 48.dp, start = 16.dp, end = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = message,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.error,
+            textAlign = TextAlign.Center
         )
-    )
+        Spacer(Modifier.height(12.dp))
+        ElevatedAssistChip(
+            onClick = onRetry,
+            label = { Text("Retry") }
+        )
+    }
 }
 
 @Preview
 @Composable
+fun MatchRecordPreview(){
+    MatchRecord(EspnEventDto("2", name = "name", date = "20261101"))
+}
+
+@Preview(showSystemUi = true)
+@Composable
 fun MatchesScreenPreview() {
-    MatchesScreen()
+    LeagueDropDownScheduleCard(EspnApiResponse())
 }

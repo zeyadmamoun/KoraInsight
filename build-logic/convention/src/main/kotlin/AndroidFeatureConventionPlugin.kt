@@ -13,11 +13,13 @@ class AndroidFeatureConventionPlugin: Plugin<Project> {
 
             val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
             dependencies {
-                add("implementation",libs.findLibrary("kotlinx-serialization-json").get())
-                add("implementation",libs.findLibrary("androidx-lifecycle-runtime-ktx").get())
-                add("implementation",libs.findLibrary("androidx-viewModel-compose").get())
-                add("implementation",libs.findLibrary("androidx-navigation3-runtime").get())
-                add("implementation",libs.findLibrary("androidx-navigation3-ui").get())
+                add("implementation", libs.findLibrary("kotlinx-serialization-json").get())
+                add("implementation", libs.findLibrary("androidx-lifecycle-runtime-ktx").get())
+                add("implementation", libs.findLibrary("androidx-viewModel-compose").get())
+                add("implementation", libs.findLibrary("androidx-navigation3-runtime").get())
+                add("implementation", libs.findLibrary("androidx-navigation3-ui").get())
+                add("implementation", libs.findLibrary("coil-compose").get())
+                add("implementation", libs.findLibrary("coil-svg").get())
                 add("implementation", project(":core"))
             }
         }

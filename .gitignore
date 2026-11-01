@@ -14,3 +14,5 @@ local.properties
 /docs.json
 /.agents/
 /graphify-out/
+/feature/fixtures/src/main/res/drawable/flag.png
+/PROJECT_STRUCTURE.md

@@ -4,11 +4,11 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class CountryDto(
-    @SerialName("code")
-    val code: String? = null,
+data class LeagueSlugDto(
+    @SerialName("id")
+    val id: Long,
+    @SerialName("slug")
+    val slug: String = "",
     @SerialName("name")
     val name: String,
-    @SerialName("logo")
-    val logo: String? = null
 )

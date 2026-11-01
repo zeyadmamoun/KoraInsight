@@ -32,6 +32,11 @@ fun LeagueScreen(
     }
 }
 
+@Composable
+fun LeaguesList(){
+
+}
+
 
 @Preview
 @Composable
