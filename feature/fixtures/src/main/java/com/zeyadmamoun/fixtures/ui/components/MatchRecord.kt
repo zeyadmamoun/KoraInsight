@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,18 +26,16 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.zeyadmamoun.data.model.Match
 import com.zeyadmamoun.fixtures.util.isLive
 import com.zeyadmamoun.fixtures.util.toDisplayBadge
 import com.zeyadmamoun.fixtures.util.toScoreText
-import com.zeyadmamoun.network.model.EspnEventDto
 
 @Composable
-fun MatchRecord(event: EspnEventDto){
-    val competition = event.competitions.firstOrNull()
-    val homeTeam = competition?.competitors?.find { it.homeAway.equals("home", ignoreCase = true) }?.team
-        ?: competition?.competitors?.getOrNull(0)?.team
-    val awayTeam = competition?.competitors?.find { it.homeAway.equals("away", ignoreCase = true) }?.team
-        ?: competition?.competitors?.getOrNull(1)?.team
+fun MatchRecord(match: Match){
+    val homeTeam = remember(match.id) { match.homeTeam }
+    val awayTeam = remember(match.id) { match.awayTeam }
+    val scoreText = remember(match.id) { match.toScoreText() }
 
     Row(
         horizontalArrangement = Arrangement.Start,
@@ -52,13 +51,13 @@ fun MatchRecord(event: EspnEventDto){
                 .height(18.dp)
                 .clip(RoundedCornerShape(4.dp))
                 .background(
-                    if (event.status.isLive()) Color(0xFFE53935)
+                    if (match.status.isLive()) Color(0xFFE53935)
                     else MaterialTheme.colorScheme.primary
                 )
                 .padding(horizontal = 2.dp)
         ) {
             Text(
-                text = event.status.toDisplayBadge(),
+                text = match.status.toDisplayBadge(),
                 style = MaterialTheme.typography.labelSmall.copy(
                     fontSize = 8.sp,
                     fontWeight = FontWeight.Bold
@@ -86,7 +85,7 @@ fun MatchRecord(event: EspnEventDto){
         // Home team logo
         AsyncImage(
             model = homeTeam?.logo,
-            contentDescription = homeTeam?.name,
+            contentDescription = match.homeTeam?.name,
             contentScale = ContentScale.Fit,
             modifier = Modifier.size(24.dp)
         )
@@ -103,7 +102,7 @@ fun MatchRecord(event: EspnEventDto){
                 .background(color = MaterialTheme.colorScheme.primary)
         ) {
             Text(
-                text = event.toScoreText(),
+                text = scoreText,
                 color = MaterialTheme.colorScheme.onPrimary,
                 style = MaterialTheme.typography.labelSmall.copy(
                     fontWeight = FontWeight.Bold
@@ -118,7 +117,7 @@ fun MatchRecord(event: EspnEventDto){
         // Away team logo
         AsyncImage(
             model = awayTeam?.logo,
-            contentDescription = awayTeam?.name,
+            contentDescription = match.awayTeam?.name,
             contentScale = ContentScale.Fit,
             modifier = Modifier.size(24.dp)
         )

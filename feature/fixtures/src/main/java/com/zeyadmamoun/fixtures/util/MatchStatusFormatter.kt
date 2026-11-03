@@ -1,21 +1,21 @@
 package com.zeyadmamoun.fixtures.util
 
-import com.zeyadmamoun.network.model.EspnEventDto
-import com.zeyadmamoun.network.model.EspnStatusDto
+import com.zeyadmamoun.data.model.Match
+import com.zeyadmamoun.data.model.Status
 
 /**
  * Returns formatted short text for match status badges (e.g. "LIVE", "FT", "HT", "PRE", "45'").
  */
-fun EspnStatusDto?.toDisplayBadge(): String {
-    val state = this?.type?.state?.trim()?.lowercase() ?: return ""
+fun Status?.toDisplayBadge(): String {
+    val state = this?.state?.trim()?.lowercase() ?: return ""
     return when (state) {
         "in" -> {
             val clock = this.displayClock?.trim()
-            val shortDetail = this.type?.shortDetail?.trim()
+            val detail = this.detail?.trim()
             when {
-                shortDetail?.equals("HT", ignoreCase = true) == true -> "HT"
+                detail?.equals("HT", ignoreCase = true) == true -> "HT"
                 !clock.isNullOrBlank() && clock.length <= 4 -> clock
-                !shortDetail.isNullOrBlank() && shortDetail.length <= 4 -> shortDetail
+                !detail.isNullOrBlank() && detail.length <= 4 -> detail
                 else -> "LIVE"
             }
         }
@@ -25,27 +25,28 @@ fun EspnStatusDto?.toDisplayBadge(): String {
     }
 }
 
+fun Match?.toDisplayBadge(): String = this?.status.toDisplayBadge()
+
 /**
  * Returns true if the match is currently in progress.
  */
-fun EspnStatusDto?.isLive(): Boolean {
-    return this?.type?.state?.trim()?.equals("in", ignoreCase = true) == true
+fun Status?.isLive(): Boolean {
+    return this?.state?.trim()?.equals("in", ignoreCase = true) == true
 }
+
+fun Match?.isLive(): Boolean = this?.status.isLive()
 
 /**
  * Returns formatted score text (e.g. "1 - 3") or "VS" if match has not started yet.
  */
-fun EspnEventDto.toScoreText(): String {
-    val state = status?.type?.state?.trim()?.lowercase()
+fun Match.toScoreText(): String {
+    val state = status.state.trim().lowercase()
     if (state == "pre") {
         return "VS"
     }
 
-    val competition = competitions.firstOrNull()
-    val homeScore = competition?.competitors?.find { it.homeAway.equals("home", ignoreCase = true) }?.score
-        ?: competition?.competitors?.getOrNull(0)?.score
-    val awayScore = competition?.competitors?.find { it.homeAway.equals("away", ignoreCase = true) }?.score
-        ?: competition?.competitors?.getOrNull(1)?.score
+    val homeScore = homeTeam?.score
+    val awayScore = awayTeam?.score
 
     return if (!homeScore.isNullOrBlank() && !awayScore.isNullOrBlank()) {
         "$homeScore - $awayScore"

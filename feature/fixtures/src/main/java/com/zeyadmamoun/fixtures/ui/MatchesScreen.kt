@@ -12,8 +12,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.ElevatedAssistChip
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -23,14 +25,16 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.zeyadmamoun.data.model.Match
+import com.zeyadmamoun.data.model.Scoreboard
+import com.zeyadmamoun.data.model.Status
 import com.zeyadmamoun.fixtures.ui.components.DateNavigationChips
 import com.zeyadmamoun.fixtures.ui.components.LeagueDropDownScheduleCard
 import com.zeyadmamoun.fixtures.ui.components.MatchRecord
 import com.zeyadmamoun.fixtures.ui.components.matchesShimmerLoading
 import com.zeyadmamoun.fixtures.ui.components.rememberShimmerBrush
-import com.zeyadmamoun.network.model.EspnApiResponse
-import com.zeyadmamoun.network.model.EspnEventDto
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MatchesScreen(
     viewModel: MatchesViewModel = viewModel()
@@ -38,51 +42,57 @@ fun MatchesScreen(
     val state by viewModel.matchesUiState.collectAsStateWithLifecycle()
     val shimmerBrush = rememberShimmerBrush()
 
-    LazyColumn(
-        modifier = Modifier
-            .padding(horizontal = 8.dp)
-            .fillMaxSize(),
-        contentPadding = PaddingValues(bottom = 100.dp, top = 8.dp),
-        verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.CenterHorizontally
+    PullToRefreshBox(
+        isRefreshing = state.isRefreshing,
+        onRefresh = { viewModel.refresh() },
+        modifier = Modifier.fillMaxSize()
     ) {
-        item {
-            DateNavigationChips(
-                daysList = state.nearbyDays,
-                selectedDay = state.selectedDay
-            ) { day ->
-                viewModel.updateSelectedDay(day)
-            }
-        }
-        item {
-            Spacer(Modifier.height(8.dp))
-        }
-
-        when (val status = state.networkStatus) {
-            is MatchesNetworkStatus.Loading -> {
-                matchesShimmerLoading(brush = shimmerBrush, count = 3)
-            }
-            is MatchesNetworkStatus.Success -> {
-                if (status.scoreboards.isEmpty()) {
-                    item {
-                        EmptyMatchesPlaceholder()
-                    }
-                } else {
-                    itemsIndexed(
-                        items = status.scoreboards,
-                        key = { index, scoreboard -> scoreboard.leagues.firstOrNull()?.id ?: index },
-                        contentType = { _, _ -> "league_schedule" }
-                    ) { _, scoreboard ->
-                        LeagueDropDownScheduleCard(scoreboard)
-                    }
+        LazyColumn(
+            modifier = Modifier
+                .padding(horizontal = 8.dp)
+                .fillMaxSize(),
+            contentPadding = PaddingValues(bottom = 100.dp, top = 8.dp),
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            item {
+                DateNavigationChips(
+                    daysList = state.nearbyDays,
+                    selectedDay = state.selectedDay
+                ) { day ->
+                    viewModel.updateSelectedDay(day)
                 }
             }
-            is MatchesNetworkStatus.Error -> {
-                item {
-                    ErrorMatchesPlaceholder(
-                        message = status.message,
-                        onRetry = { viewModel.getScoreboards() }
-                    )
+            item {
+                Spacer(Modifier.height(8.dp))
+            }
+
+            when (val status = state.networkStatus) {
+                is MatchesNetworkStatus.Loading -> {
+                    matchesShimmerLoading(brush = shimmerBrush, count = 3)
+                }
+                is MatchesNetworkStatus.Success -> {
+                    if (state.scoreboards.isEmpty()) {
+                        item {
+                            EmptyMatchesPlaceholder()
+                        }
+                    } else {
+                        itemsIndexed(
+                            items = state.scoreboards,
+                            key = { index, scoreboard -> scoreboard.leagues.firstOrNull()?.slug ?: index },
+                            contentType = { _, _ -> "league_card" }
+                        ) { _, scoreboard ->
+                            LeagueDropDownScheduleCard(scoreboard)
+                        }
+                    }
+                }
+                is MatchesNetworkStatus.Error -> {
+                    item {
+                        ErrorMatchesPlaceholder(
+                            message = status.message,
+                            onRetry = { viewModel.getScoreboards() }
+                        )
+                    }
                 }
             }
         }
@@ -133,11 +143,18 @@ private fun ErrorMatchesPlaceholder(
 @Preview
 @Composable
 fun MatchRecordPreview(){
-    MatchRecord(EspnEventDto("2", name = "name", date = "20261101"))
+    MatchRecord(
+        Match(
+            "2",
+            name = "name",
+            date = "20261101",
+            status = Status(1359, "status", name = "status name", state = "ss", description = "desc")
+        )
+    )
 }
 
 @Preview(showSystemUi = true)
 @Composable
 fun MatchesScreenPreview() {
-    LeagueDropDownScheduleCard(EspnApiResponse())
+    LeagueDropDownScheduleCard(Scoreboard())
 }

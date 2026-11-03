@@ -2,6 +2,9 @@ package com.zeyadmamoun.network.model
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.contentOrNull
 
 @Serializable
 data class EspnApiResponse(
@@ -59,8 +62,11 @@ data class EspnLeagueDto(
     @SerialName("calendarEndDate")
     val calendarEndDate: String? = null,
     @SerialName("calendar")
-    val calendar: List<String> = emptyList(),
+    val calendar: List<JsonElement> = emptyList(),
 )
+
+val EspnLeagueDto.calendarDates: List<String>
+    get() = calendar.mapNotNull { (it as? JsonPrimitive)?.contentOrNull }
 
 @Serializable
 data class EspnLeagueSeasonDto(
@@ -166,6 +172,18 @@ data class EspnCompetitionDto(
     val geoBroadcasts: List<EspnGeoBroadcastDto> = emptyList(),
     @SerialName("broadcasts")
     val broadcasts: List<EspnBroadcastDto> = emptyList(),
+    @SerialName("tickets")
+    val tickets: List<EspnTicketDto> = emptyList(),
+)
+
+@Serializable
+data class EspnTicketDto(
+    @SerialName("summary")
+    val summary: String? = null,
+    @SerialName("numberAvailable")
+    val numberAvailable: Int? = null,
+    @SerialName("links")
+    val links: List<EspnLinkDto> = emptyList(),
 )
 
 @Serializable

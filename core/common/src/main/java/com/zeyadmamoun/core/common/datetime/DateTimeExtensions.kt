@@ -49,3 +49,13 @@ fun LocalDate.toRelativeChipString(today: LocalDate = Clock.System.today()): Str
         else -> this.toChipString() // Fallback to "Mon, Oct 26"
     }
 }
+
+/**
+ * Converts an ISO calendar date string (e.g. "2027-06-01T03:59Z")
+ * to compact request format "yyyyMMdd" (e.g. "20270601").
+ */
+fun String.calendarDateToCompactString(): String {
+    val datePart = this.substringBefore('T')
+    return LocalDate.parse(datePart).toCompactDateString()
+}
+
