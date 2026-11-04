@@ -36,5 +36,10 @@ gradlePlugin {
             id = "koraInsight.android.feature"
             implementationClass = "AndroidFeatureConventionPlugin"
         }
+
+        register("androidHilt"){
+            id = "koraInsight.android.hilt"
+            implementationClass = "AndroidHiltConventionPlugin"
+        }
     }
 }

@@ -1,7 +1,6 @@
 package com.zeyadmamoun.korainsight.ui.navigation
 
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.NavBackStack
@@ -15,7 +14,7 @@ import com.zeyadmamoun.profile.navigation.profileEntryProvider
 @Composable
 fun KoraInsightNavDisplay(
     backStack: NavBackStack<NavKey>,
-    paddingValues: PaddingValues
+    modifier: Modifier = Modifier.fillMaxSize()
 ){
     NavDisplay(
         backStack = backStack,
@@ -24,6 +23,6 @@ fun KoraInsightNavDisplay(
             leaguesEntryProvider()
             profileEntryProvider()
         },
-        modifier = Modifier.padding(paddingValues)
+        modifier = modifier
     )
 }

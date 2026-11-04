@@ -1,4 +1,4 @@
-package com.zeyadmamoun.core.datetime
+package com.zeyadmamoun.core.common.datetime
 
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
@@ -23,6 +23,13 @@ fun LocalDate.toApiDateString(): String {
 }
 
 /**
+ * Formats this [LocalDate] to the compact "yyyyMMdd" string (e.g. for ESPN API queries `?dates=yyyyMMdd`).
+ */
+fun LocalDate.toCompactDateString(): String {
+    return format(DateFormats.BASIC_ISO_DATE)
+}
+
+/**
  * Returns date formatted for navigation chips [dayOfTheWeek, monthName dayOfMonth]
  * (e.g. "Sun, Oct 25"). Uses pre-allocated [DateFormats.CHIP_DATE].
  */
@@ -42,3 +49,13 @@ fun LocalDate.toRelativeChipString(today: LocalDate = Clock.System.today()): Str
         else -> this.toChipString() // Fallback to "Mon, Oct 26"
     }
 }
+
+/**
+ * Converts an ISO calendar date string (e.g. "2027-06-01T03:59Z")
+ * to compact request format "yyyyMMdd" (e.g. "20270601").
+ */
+fun String.calendarDateToCompactString(): String {
+    val datePart = this.substringBefore('T')
+    return LocalDate.parse(datePart).toCompactDateString()
+}
+

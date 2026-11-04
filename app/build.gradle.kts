@@ -1,5 +1,6 @@
 plugins {
     id("koraInsight.android.application.compose")
+    id("koraInsight.android.hilt")
 }
 
 android {
@@ -11,9 +12,15 @@ android {
 
     buildTypes {
         release {
+            signingConfig = signingConfigs.getByName("debug")
             optimization {
                 enable = false
             }
         }
     }
-}
+}
+
+dependencies {
+    implementation(libs.coil.compose)
+    implementation(libs.coil.svg)
+}

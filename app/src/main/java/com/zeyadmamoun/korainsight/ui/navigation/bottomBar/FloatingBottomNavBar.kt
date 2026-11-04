@@ -9,6 +9,7 @@ import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -62,16 +63,21 @@ fun FloatingBottomNavBar(
         modifier = modifier
             .fillMaxWidth()
             .navigationBarsPadding()
-            .padding(horizontal = 16.dp, vertical = 12.dp)
+            .padding(horizontal = 24.dp, vertical = 12.dp)
             .shadow(
-                elevation = 24.dp,
+                elevation = 16.dp,
                 shape = RoundedCornerShape(32.dp),
-                spotColor = Color(0x46000000),
-                ambientColor = Color(0xB9000000)
+                spotColor = Color(0x35000000),
+                ambientColor = Color(0x18000000)
+            )
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f),
+                shape = RoundedCornerShape(32.dp)
             ),
         shape = RoundedCornerShape(32.dp),
         color = containerColor,
-        tonalElevation = 0.dp
+        tonalElevation = 3.dp
     ) {
         Row(
             modifier = Modifier
