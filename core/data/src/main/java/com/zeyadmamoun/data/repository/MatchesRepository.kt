@@ -28,6 +28,7 @@ interface MatchesRepository {
      */
     fun getMatchesForLeague(
         leagueSlugs: List<LeagueSlug>,
-        date: String
+        date: String,
+        isForceRefresh: Boolean
     ): Flow<Result<List<Scoreboard>>>
 }

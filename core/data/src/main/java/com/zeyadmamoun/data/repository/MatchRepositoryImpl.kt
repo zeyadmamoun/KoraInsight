@@ -29,9 +29,12 @@ class MatchRepositoryImpl @Inject constructor(
     private val networkDataSource: NetworkDataSource
 ) : MatchesRepository {
 
+    val cachedScoreboard = mutableMapOf<String, List<Scoreboard>>()
+
     override fun getMatchesForLeague(
         leagueSlugs: List<LeagueSlug>,
-        date: String
+        date: String,
+        isForceRefresh: Boolean
     ): Flow<Result<List<Scoreboard>>> = flow {
         // 1. Guard against empty requests before emitting loading state
         if (leagueSlugs.isEmpty()) {
@@ -41,7 +44,14 @@ class MatchRepositoryImpl @Inject constructor(
 
         emit(Result.Loading)
 
-        // 2. Fire requests concurrently while isolating failures per league
+        // 2. checking for the cached dates and return it if available
+        val mapData = cachedScoreboard[date]
+        if (mapData != null && !isForceRefresh){
+            emit(Result.Success(mapData))
+            return@flow
+        }
+
+        // 3. Fire requests concurrently while isolating failures per league
         val scoreboardList = coroutineScope {
             leagueSlugs.map { league ->
                 async {
@@ -59,6 +69,7 @@ class MatchRepositoryImpl @Inject constructor(
 
         // 3. Emit success with partial or full results, or error if all failed
         if (scoreboardList.isNotEmpty()) {
+            cachedScoreboard[date] = scoreboardList
             emit(Result.Success(scoreboardList))
         } else {
             emit(Result.Error("Failed to fetch matches for all leagues"))
