@@ -127,7 +127,8 @@ class MatchesViewModel @Inject constructor(
         fetchMatchesJob = viewModelScope.launch {
             matchesRepository.getMatchesForLeague(
                 _matchesUiState.value.leagues,
-                _matchesUiState.value.selectedDay.toCompactDateString()
+                _matchesUiState.value.selectedDay.toCompactDateString(),
+                isRefresh
             ).collect { result ->
 
                 when (result) {
