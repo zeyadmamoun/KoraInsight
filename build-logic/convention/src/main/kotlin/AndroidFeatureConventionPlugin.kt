@@ -21,6 +21,7 @@ class AndroidFeatureConventionPlugin: Plugin<Project> {
                 add("implementation", libs.findLibrary("coil-compose").get())
                 add("implementation", libs.findLibrary("coil-svg").get())
                 add("implementation", project(":core"))
+                add("implementation", project(":core:data"))
             }
         }
     }

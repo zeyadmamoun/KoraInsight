@@ -2,6 +2,7 @@ package com.zeyadmamoun.core.common.datetime
 
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.format
@@ -57,5 +58,28 @@ fun LocalDate.toRelativeChipString(today: LocalDate = Clock.System.today()): Str
 fun String.calendarDateToCompactString(): String {
     val datePart = this.substringBefore('T')
     return LocalDate.parse(datePart).toCompactDateString()
+}
+
+/**
+ * Converts an ISO 8601 UTC date string (e.g. "2026-10-31T12:30Z") into local time "HH:mm" (e.g. "14:30").
+ */
+fun String.toLocalTimeString(timeZone: TimeZone = TimeZone.currentSystemDefault()): String {
+    return try {
+        val instant = Instant.parse(this)
+        val local = instant.toLocalDateTime(timeZone)
+        val hour = local.hour.toString().padStart(2, '0')
+        val minute = local.minute.toString().padStart(2, '0')
+        "$hour:$minute"
+    } catch (_: Exception) {
+        try {
+            if (contains('T')) {
+                substringAfter('T').take(5)
+            } else {
+                "VS"
+            }
+        } catch (_: Exception) {
+            "VS"
+        }
+    }
 }
 

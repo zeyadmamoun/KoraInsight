@@ -1,4 +1,4 @@
-package com.zeyadmamoun.network.model
+package com.zeyadmamoun.network.model.scoreboard
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

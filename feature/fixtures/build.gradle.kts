@@ -1,3 +1,5 @@
+import org.gradle.kotlin.dsl.dependencies
+
 plugins {
     id("koraInsight.android.library")
     id("koraInsight.android.library.compose")
@@ -11,5 +13,4 @@ android {
 
 dependencies {
     implementation(libs.material)
-    implementation(project(":core:data"))
 }
