@@ -1,11 +1,11 @@
-package com.zeyadmamoun.data.model
+package com.zeyadmamoun.data.model.scoreboard
 
-import com.zeyadmamoun.network.model.EspnAddressDto
-import com.zeyadmamoun.network.model.EspnCompetitorDto
-import com.zeyadmamoun.network.model.EspnEventDto
-import com.zeyadmamoun.network.model.EspnStatusDto
-import com.zeyadmamoun.network.model.EspnTicketDto
-import com.zeyadmamoun.network.model.EspnVenueDto
+import com.zeyadmamoun.network.model.scoreboard.EspnAddressDto
+import com.zeyadmamoun.network.model.scoreboard.EspnCompetitorDto
+import com.zeyadmamoun.network.model.scoreboard.EspnEventDto
+import com.zeyadmamoun.network.model.scoreboard.EspnStatusDto
+import com.zeyadmamoun.network.model.scoreboard.EspnTicketDto
+import com.zeyadmamoun.network.model.scoreboard.EspnVenueDto
 
 data class Match(
     val id: String,

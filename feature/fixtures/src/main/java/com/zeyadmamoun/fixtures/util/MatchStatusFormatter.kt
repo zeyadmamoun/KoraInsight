@@ -1,7 +1,8 @@
 package com.zeyadmamoun.fixtures.util
 
-import com.zeyadmamoun.data.model.Match
-import com.zeyadmamoun.data.model.Status
+import com.zeyadmamoun.core.common.datetime.toLocalTimeString
+import com.zeyadmamoun.data.model.scoreboard.Match
+import com.zeyadmamoun.data.model.scoreboard.Status
 
 /**
  * Returns formatted short text for match status badges (e.g. "LIVE", "FT", "HT", "PRE", "45'").
@@ -37,12 +38,12 @@ fun Status?.isLive(): Boolean {
 fun Match?.isLive(): Boolean = this?.status.isLive()
 
 /**
- * Returns formatted score text (e.g. "1 - 3") or "VS" if match has not started yet.
+ * Returns formatted score text (e.g. "1 - 3") or kickoff time (e.g. "20:00") if match has not started yet.
  */
 fun Match.toScoreText(): String {
     val state = status.state.trim().lowercase()
     if (state == "pre") {
-        return "VS"
+        return date.toLocalTimeString()
     }
 
     val homeScore = homeTeam?.score
@@ -51,6 +52,6 @@ fun Match.toScoreText(): String {
     return if (!homeScore.isNullOrBlank() && !awayScore.isNullOrBlank()) {
         "$homeScore - $awayScore"
     } else {
-        "VS"
+        date.toLocalTimeString()
     }
 }

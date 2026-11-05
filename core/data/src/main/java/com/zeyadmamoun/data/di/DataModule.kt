@@ -1,5 +1,7 @@
 package com.zeyadmamoun.data.di
 
+import com.zeyadmamoun.data.repository.LeaguesRepository
+import com.zeyadmamoun.data.repository.LeaguesRepositoryImpl
 import com.zeyadmamoun.data.repository.MatchRepositoryImpl
 import com.zeyadmamoun.data.repository.MatchesRepository
 import dagger.Binds
@@ -17,4 +19,10 @@ abstract class DataModule {
     abstract fun bindMatchesRepository(
         impl: MatchRepositoryImpl
     ): MatchesRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindLeaguesRepository(
+        impl: LeaguesRepositoryImpl
+    ): LeaguesRepository
 }

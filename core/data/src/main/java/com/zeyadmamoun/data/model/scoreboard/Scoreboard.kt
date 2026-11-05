@@ -1,6 +1,6 @@
-package com.zeyadmamoun.data.model
+package com.zeyadmamoun.data.model.scoreboard
 
-import com.zeyadmamoun.network.model.EspnApiResponse
+import com.zeyadmamoun.network.model.scoreboard.EspnApiResponse
 
 data class Scoreboard(
     val leagues: List<League> = emptyList(),

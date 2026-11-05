@@ -1,8 +1,8 @@
 package com.zeyadmamoun.data.repository
 
 import com.zeyadmamoun.core.common.result.Result
-import com.zeyadmamoun.data.model.LeagueSlug
-import com.zeyadmamoun.data.model.Scoreboard
+import com.zeyadmamoun.data.model.scoreboard.LeagueSlug
+import com.zeyadmamoun.data.model.scoreboard.Scoreboard
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -12,16 +12,6 @@ import kotlinx.coroutines.flow.Flow
  * exposing clean domain models wrapped in [Result] streams for the UI layer.
  */
 interface MatchesRepository {
-
-    /**
-     * Retrieves the list of featured league slugs supported by the application.
-     *
-     * @return A cold [Flow] emitting:
-     * - [Result.Loading] when the fetch begins.
-     * - [Result.Success] containing the list of [LeagueSlug] items.
-     * - [Result.Error] if the remote fetch fails.
-     */
-    fun getLeagueSlugs(): Flow<Result<List<LeagueSlug>>>
 
     /**
      * Retrieves match scoreboards for multiple leagues on a specific date.

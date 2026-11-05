@@ -42,4 +42,11 @@ val Typography = Typography(
         lineHeight = 16.sp,
         letterSpacing = 0.28.sp
     ),
+    titleSmall = TextStyle(
+        fontFamily = plus_jakarta_sans,
+        fontWeight = FontWeight.Normal,
+        fontSize = 10.sp,
+        lineHeight = 16.sp,
+        letterSpacing = 0.28.sp
+    ),
 )

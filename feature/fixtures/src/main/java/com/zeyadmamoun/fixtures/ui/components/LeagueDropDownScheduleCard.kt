@@ -45,7 +45,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.zeyadmamoun.data.model.Scoreboard
+import com.zeyadmamoun.data.model.scoreboard.Scoreboard
 
 @Composable
 fun LeagueDropDownScheduleCard(

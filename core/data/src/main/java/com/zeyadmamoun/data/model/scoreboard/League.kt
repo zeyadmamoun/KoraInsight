@@ -1,8 +1,8 @@
-package com.zeyadmamoun.data.model
+package com.zeyadmamoun.data.model.scoreboard
 
 import com.zeyadmamoun.core.common.datetime.calendarDateToCompactString
-import com.zeyadmamoun.network.model.EspnLeagueDto
-import com.zeyadmamoun.network.model.calendarDates
+import com.zeyadmamoun.network.model.scoreboard.EspnLeagueDto
+import com.zeyadmamoun.network.model.scoreboard.calendarDates
 
 data class League(
     val id: String,

@@ -26,7 +26,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.zeyadmamoun.data.model.Match
+import com.zeyadmamoun.data.model.scoreboard.Match
 import com.zeyadmamoun.fixtures.util.isLive
 import com.zeyadmamoun.fixtures.util.toDisplayBadge
 import com.zeyadmamoun.fixtures.util.toScoreText
@@ -92,14 +92,15 @@ fun MatchRecord(match: Match){
 
         Spacer(modifier = Modifier.weight(1f))
 
-        // Score box
+        // Score / Time box
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
-                .width(38.dp)
+                .width(44.dp)
                 .height(22.dp)
                 .clip(RoundedCornerShape(4.dp))
                 .background(color = MaterialTheme.colorScheme.primary)
+                .padding(horizontal = 2.dp)
         ) {
             Text(
                 text = scoreText,
@@ -108,6 +109,7 @@ fun MatchRecord(match: Match){
                     fontWeight = FontWeight.Bold
                 ),
                 maxLines = 1,
+                softWrap = false,
                 textAlign = TextAlign.Center
             )
         }
