@@ -16,6 +16,9 @@ data class Match(
     val venue: Venue? = null,
     val tickets: List<Ticket> = emptyList(),
     val teams: List<Team> = emptyList(),
+    val roundTitle: String? = null,
+    val leg: String? = null,
+    val note: String? = null,
 ) {
     val homeTeam: Team? get() = teams.firstOrNull { it.homeAway == "home" }
     val awayTeam: Team? get() = teams.firstOrNull { it.homeAway == "away" }
@@ -59,6 +62,8 @@ data class Team(
     val alternateColor: String? = null,
     val homeAway: String? = null,
     val score: String? = null,
+    val shootoutScore: Int? = null,
+    val aggregateScore: Int? = null,
     val winner: Boolean? = null,
     val form: String? = null,
 )
@@ -70,18 +75,33 @@ val EspnEventDto.tickets: List<Ticket>
     get() = competitions.firstOrNull()?.tickets.orEmpty().map { it.toTicket() }
 
 val EspnEventDto.teams: List<Team>
-    get() = competitions.firstOrNull()?.competitors.orEmpty().map { it.toTeam() }
+    get() {
+        val comp = competitions.firstOrNull() ?: return emptyList()
+        val seriesCompMap = comp.series?.competitors.orEmpty().associateBy { it.id }
+        return comp.competitors.map { competitor ->
+            val seriesComp = seriesCompMap[competitor.team.id] ?: seriesCompMap[competitor.id]
+            competitor.toTeam(
+                aggregateScore = seriesComp?.aggregateScore?.toInt()
+            )
+        }
+    }
 
-fun EspnEventDto.toMatch(): Match = Match(
-    id = id,
-    date = date,
-    name = name,
-    shortName = shortName,
-    status = status.toStatus(),
-    venue = venue.toVenue(),
-    tickets = tickets,
-    teams = teams,
-)
+fun EspnEventDto.toMatch(): Match {
+    val comp = competitions.firstOrNull()
+    return Match(
+        id = id,
+        date = date,
+        name = name,
+        shortName = shortName,
+        status = status.toStatus(),
+        venue = venue.toVenue(),
+        tickets = tickets,
+        teams = teams,
+        roundTitle = comp?.series?.title,
+        leg = comp?.leg?.displayValue,
+        note = comp?.notes?.firstOrNull()?.headline ?: comp?.notes?.firstOrNull()?.text,
+    )
+}
 
 fun EspnStatusDto?.toStatus(): Status = Status(
     clock = this?.clock?.toInt(),
@@ -114,7 +134,7 @@ fun EspnTicketDto.toTicket(): Ticket = Ticket(
     links = links.mapNotNull { it.href },
 )
 
-fun EspnCompetitorDto.toTeam(): Team = Team(
+fun EspnCompetitorDto.toTeam(aggregateScore: Int? = null): Team = Team(
     id = team.id,
     name = team.name ?: team.displayName,
     displayName = team.displayName,
@@ -124,6 +144,8 @@ fun EspnCompetitorDto.toTeam(): Team = Team(
     alternateColor = team.alternateColor,
     homeAway = homeAway,
     score = score,
+    shootoutScore = shootoutScore,
+    aggregateScore = aggregateScore,
     winner = winner,
     form = form,
 )

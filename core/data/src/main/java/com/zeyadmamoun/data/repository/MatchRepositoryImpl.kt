@@ -75,4 +75,15 @@ class MatchRepositoryImpl @Inject constructor(
             emit(Result.Error("Failed to fetch matches for all leagues"))
         }
     }.flowOn(Dispatchers.IO)
+
+    override fun getScoreboardForLeague(leagueSlug: String): Flow<Result<Scoreboard>> = flow {
+        emit(Result.Loading)
+        try {
+            val response = networkDataSource.getScoreboards(leagueSlug, "")
+            emit(Result.Success(response.toScoreboard()))
+        } catch (e: Exception) {
+            if (e is CancellationException) throw e
+            emit(Result.Error(e.message ?: "Failed to fetch matches for $leagueSlug"))
+        }
+    }.flowOn(Dispatchers.IO)
 }

@@ -35,7 +35,9 @@ import com.zeyadmamoun.data.model.standings.LeagueTableEntry
 fun StandingsTable(
     standing: LeagueStandings,
     modifier: Modifier = Modifier,
-    maxRows: Int = 6
+    maxRows: Int = 6,
+    showLegend: Boolean = true,
+    customLegend: (@Composable () -> Unit)? = null
 ) {
     val displayEntries = standing.entries.take(maxRows)
 
@@ -67,7 +69,11 @@ fun StandingsTable(
         )
 
         // Bottom Legend
-        StandingsQualificationLegend()
+        if (customLegend != null) {
+            customLegend()
+        } else if (showLegend) {
+            StandingsQualificationLegend()
+        }
     }
 }
 
@@ -125,7 +131,16 @@ fun StandingsTableRow(
     entry: LeagueTableEntry,
     modifier: Modifier = Modifier
 ) {
+    val parsedColor = entry.qualificationColor?.let { colorStr ->
+        try {
+            Color(android.graphics.Color.parseColor(colorStr))
+        } catch (_: Exception) {
+            null
+        }
+    }
+
     val stripeColor = when {
+        parsedColor != null -> parsedColor
         entry.qualificationNote?.contains("Champions League", ignoreCase = true) == true || entry.rank in 1..4 -> Color(0xFF3B82F6) // Blue (UCL)
         entry.qualificationNote?.contains("Europa", ignoreCase = true) == true || entry.rank == 5 -> Color(0xFFF59E0B)          // Amber (UEL)
         entry.qualificationNote?.contains("Conference", ignoreCase = true) == true || entry.rank == 6 -> Color(0xFF10B981)      // Emerald (UECL)
@@ -244,9 +259,9 @@ fun StandingsQualificationLegend(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        LegendDotItem(color = Color(0xFF3B82F6), label = "1–4 Champions League")
+        LegendDotItem(color = Color(0xFF3B82F6), label = "Champions League")
         LegendDotItem(color = Color(0xFFF59E0B), label = "5 Europa")
-        LegendDotItem(color = Color(0xFF10B981), label = "6 Conf. League")
+        LegendDotItem(color = Color(0xFF10B981), label = "6 Conf League")
     }
 }
 

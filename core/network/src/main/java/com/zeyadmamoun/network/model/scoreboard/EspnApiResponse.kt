@@ -168,12 +168,46 @@ data class EspnCompetitionDto(
     val format: EspnFormatDto? = null,
     @SerialName("notes")
     val notes: List<EspnNoteDto> = emptyList(),
+    @SerialName("leg")
+    val leg: EspnLegDto? = null,
+    @SerialName("series")
+    val series: EspnSeriesDto? = null,
     @SerialName("geoBroadcasts")
     val geoBroadcasts: List<EspnGeoBroadcastDto> = emptyList(),
     @SerialName("broadcasts")
     val broadcasts: List<EspnBroadcastDto> = emptyList(),
     @SerialName("tickets")
     val tickets: List<EspnTicketDto> = emptyList(),
+)
+
+@Serializable
+data class EspnLegDto(
+    @SerialName("value")
+    val value: Int? = null,
+    @SerialName("displayValue")
+    val displayValue: String? = null,
+)
+
+@Serializable
+data class EspnSeriesDto(
+    @SerialName("title")
+    val title: String? = null,
+    @SerialName("completed")
+    val completed: Boolean = false,
+    @SerialName("totalCompetitions")
+    val totalCompetitions: Int? = null,
+    @SerialName("competitors")
+    val competitors: List<EspnSeriesCompetitorDto> = emptyList(),
+)
+
+@Serializable
+data class EspnSeriesCompetitorDto(
+    @SerialName("id")
+    val id: String,
+    @SerialName("winner")
+    val winner: Boolean? = null,
+    @SerialName("aggregateScore")
+    val aggregateScore: Double? = null,
 )
 
 @Serializable
@@ -252,6 +286,8 @@ data class EspnCompetitorDto(
     val form: String? = null,
     @SerialName("score")
     val score: String? = null,
+    @SerialName("shootoutScore")
+    val shootoutScore: Int? = null,
     @SerialName("records")
     val records: List<EspnRecordDto> = emptyList(),
     @SerialName("team")
@@ -394,6 +430,8 @@ data class EspnNoteDto(
     val type: String? = null,
     @SerialName("headline")
     val headline: String? = null,
+    @SerialName("text")
+    val text: String? = null,
 )
 
 @Serializable

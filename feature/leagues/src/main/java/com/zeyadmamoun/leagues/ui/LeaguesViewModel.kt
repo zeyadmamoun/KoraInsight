@@ -4,8 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.zeyadmamoun.core.common.result.Result
 import com.zeyadmamoun.data.model.scoreboard.LeagueSlug
+import com.zeyadmamoun.data.model.scoreboard.Match
 import com.zeyadmamoun.data.model.standings.LeagueStandings
 import com.zeyadmamoun.data.repository.LeaguesRepository
+import com.zeyadmamoun.data.repository.MatchesRepository
 import com.zeyadmamoun.leagues.ui.utils.LeaguesNetworkStatus
 import com.zeyadmamoun.leagues.ui.utils.StandingsCardData
 import com.zeyadmamoun.leagues.ui.utils.toCardLeagues
@@ -19,7 +21,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LeaguesViewModel @Inject constructor(
-    private val leaguesRepository: LeaguesRepository
+    private val leaguesRepository: LeaguesRepository,
+    private val matchesRepository: MatchesRepository
 ) : ViewModel() {
 
     private var _leaguesUiState = MutableStateFlow(LeaguesScreenState())
@@ -27,6 +30,7 @@ class LeaguesViewModel @Inject constructor(
 
     init {
         getLeagues()
+        getMatchesForLeague("uefa.champions")
     }
 
     fun getLeagues() {
@@ -93,11 +97,27 @@ class LeaguesViewModel @Inject constructor(
             }
         }
     }
+
+    /**
+     * Retrieves the current matchday / active fixtures for any specific league or tournament.
+     *
+     * @param slug The ESPN league slug (e.g. "uefa.champions").
+     */
+    fun getMatchesForLeague(slug: String = "uefa.champions") {
+        viewModelScope.launch {
+            matchesRepository.getScoreboardForLeague(slug).collect { result ->
+                if (result is Result.Success) {
+                    _leaguesUiState.update { it.copy(uclMatches = result.data.matches) }
+                }
+            }
+        }
+    }
 }
 
 data class LeaguesScreenState(
     val leagues: List<LeagueSlug> = emptyList(),
     val standings: List<LeagueStandings> = emptyList(),
     val standingsCardData: StandingsCardData? = null,
+    val uclMatches: List<Match> = emptyList(),
     val networkStatus: LeaguesNetworkStatus = LeaguesNetworkStatus.Loading
 )

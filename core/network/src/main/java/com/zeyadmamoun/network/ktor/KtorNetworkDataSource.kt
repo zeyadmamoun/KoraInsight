@@ -26,7 +26,9 @@ class KtorNetworkDataSource @Inject constructor(
     override suspend fun getScoreboards(leagueSlug: String, date: String): EspnApiResponse {
         return client.get("https://site.api.espn.com/apis/site/v2/sports/soccer/${leagueSlug}/scoreboard") {
             url {
-                parameters.append("dates", date)
+                if (date.isNotBlank()) {
+                    parameters.append("dates", date)
+                }
             }
         }.body()
     }

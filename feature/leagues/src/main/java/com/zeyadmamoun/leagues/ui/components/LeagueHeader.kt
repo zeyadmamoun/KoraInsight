@@ -36,7 +36,12 @@ fun LeagueHeader(
     modifier: Modifier = Modifier,
     onFullLeagueClicked: () -> Unit = {}
 ) {
-    val numberOfRounds = (standing.entries.size * 2) - 2
+    val numberOfRounds = if (league.slug.contains("champions", ignoreCase = true)) {
+        8
+    } else {
+        (standing.entries.size * 2) - 2
+    }
+
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -46,7 +51,7 @@ fun LeagueHeader(
         horizontalArrangement = Arrangement.Start
     ) {
         AsyncImage(
-            model = if (isSystemInDarkTheme()) league.darkLogoUrl else league.logoUrl,
+            model = if (isSystemInDarkTheme()) league.darkLogoUrl ?: league.logoUrl else league.logoUrl,
             contentDescription = league.name,
             contentScale = ContentScale.Fit,
             modifier = Modifier.size(48.dp)
@@ -62,12 +67,13 @@ fun LeagueHeader(
                 text = league.name,
                 style = MaterialTheme.typography.labelMedium
             )
+            val roundSubtitle = if (standing.currentRound > 0) {
+                "Round ${standing.currentRound} of $numberOfRounds - ${standing.seasonYear} / ${standing.seasonYear?.plus(1)}"
+            } else {
+                "${standing.seasonDisplayName ?: "League Phase"} - ${standing.seasonYear} / ${standing.seasonYear?.plus(1)}"
+            }
             Text(
-                text = "Round ${standing.currentRound} of $numberOfRounds - ${standing.seasonYear} / ${
-                    standing.seasonYear?.plus(
-                        1
-                    )
-                }",
+                text = roundSubtitle,
                 style = MaterialTheme.typography.titleSmall
             )
         }
