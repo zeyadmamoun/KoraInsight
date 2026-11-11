@@ -2,15 +2,19 @@ package com.zeyadmamoun.korainsight.ui.navigation.bottomBar
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Newspaper
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.DateRange
+import androidx.compose.material.icons.outlined.Newspaper
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation3.runtime.NavKey
 import com.zeyadmamoun.fixtures.navigation.MatchesRoute
 import com.zeyadmamoun.leagues.navigation.LeaguesRoute
+import com.zeyadmamoun.news.navigation.NewsRoute
 import com.zeyadmamoun.profile.navigation.ProfileRoute
 
 /**
@@ -43,6 +47,12 @@ val defaultBottomNavItems = listOf(
         title = "Leagues",
         selectedIcon = Icons.Filled.Star,
         unselectedIcon = Icons.Outlined.Star,
+    ),
+    BottomNavItem(
+        route = NewsRoute,
+        title = "News",
+        selectedIcon = Icons.Filled.Newspaper,
+        unselectedIcon = Icons.Outlined.Newspaper,
     ),
     BottomNavItem(
         route = ProfileRoute,
