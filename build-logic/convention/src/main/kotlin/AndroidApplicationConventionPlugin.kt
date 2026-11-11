@@ -49,6 +49,8 @@ class AndroidApplicationConventionPlugin: Plugin<Project> {
                 add("implementation", project(":feature:fixtures"))
                 add("implementation", project(":feature:leagues"))
                 add("implementation", project(":feature:profile"))
+                add("implementation", project(":feature:news"))
+                add("implementation", project(":feature:match-details"))
             }
         }
     }

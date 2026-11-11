@@ -3,8 +3,13 @@ package com.zeyadmamoun.leagues.ui
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -19,8 +24,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.zeyadmamoun.data.model.scoreboard.LeagueSlug
+import com.zeyadmamoun.leagues.ui.components.ChampionsLeagueStandingsCard
 import com.zeyadmamoun.leagues.ui.components.LeagueStandingsCard
 import com.zeyadmamoun.leagues.ui.components.LeaguesErrorPlaceholder
+import com.zeyadmamoun.leagues.ui.components.LeaguesHorizontalScroll
 import com.zeyadmamoun.leagues.ui.components.SelectableLeagueChip
 import com.zeyadmamoun.leagues.ui.utils.LeaguesNetworkStatus
 
@@ -35,7 +42,8 @@ fun LeagueScreen(
         modifier = Modifier
             .padding(paddingValues)
             .padding(horizontal = 8.dp)
-            .fillMaxSize(),
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
@@ -58,10 +66,41 @@ fun LeagueScreen(
                         onRetry = { viewModel.getLeagues() }
                     )
                 } else {
+                    LeaguesHorizontalScroll(
+                        leagues = state.leagues,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp)
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
                     LeagueStandingsCard(
                         leagues = state.standingsCardData?.cardLeagues.orEmpty(),
                         leagueStandings = state.standingsCardData?.standings.orEmpty()
                     )
+
+                    val uclLeague = remember(state.leagues) {
+                        state.leagues.find { it.slug == "uefa.champions" }
+                    }
+                    val uclStanding = remember(state.standings, uclLeague) {
+                        state.standings.find { standing ->
+                            standing.leagueUid == uclLeague?.leagueUid ||
+                            standing.leagueName.contains("Champions League", ignoreCase = true)
+                        }
+                    }
+
+                    if (uclLeague != null && uclStanding != null) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        ChampionsLeagueStandingsCard(
+                            league = uclLeague,
+                            standing = uclStanding,
+                            matches = state.uclMatches,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(100.dp))
                 }
             }
         }
