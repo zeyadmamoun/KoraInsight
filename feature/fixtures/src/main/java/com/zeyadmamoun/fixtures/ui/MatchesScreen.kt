@@ -38,7 +38,8 @@ import com.zeyadmamoun.fixtures.ui.utils.MatchesNetworkStatus
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MatchesScreen(
-    viewModel: MatchesViewModel = viewModel()
+    viewModel: MatchesViewModel = viewModel(),
+    onMatchClicked: (String, String) -> Unit = {_, _ ->}
 ) {
     val state by viewModel.matchesUiState.collectAsStateWithLifecycle()
     val shimmerBrush = rememberShimmerBrush()
@@ -83,7 +84,7 @@ fun MatchesScreen(
                             key = { index, scoreboard -> scoreboard.leagues.firstOrNull()?.slug ?: index },
                             contentType = { _, _ -> "league_card" }
                         ) { _, scoreboard ->
-                            LeagueDropDownScheduleCard(scoreboard)
+                            LeagueDropDownScheduleCard(scoreboard,onMatchClicked)
                         }
                     }
                 }
@@ -150,7 +151,8 @@ fun MatchRecordPreview(){
             name = "name",
             date = "20261101",
             status = Status(1359, "status", name = "status name", state = "ss", description = "desc")
-        )
+        ),
+        league = "esp.1"
     )
 }
 

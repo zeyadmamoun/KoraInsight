@@ -21,6 +21,13 @@ val Typography = Typography(
         lineHeight = 24.sp,
         letterSpacing = 0.5.sp
     ),
+    bodySmall = TextStyle(
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.Normal,
+        fontSize = 12.sp,
+        lineHeight = 16.8.sp,
+        letterSpacing = 0.sp
+    ),
     headlineSmall = TextStyle(
         fontFamily = plus_jakarta_sans,
         fontWeight = FontWeight.SemiBold,
@@ -49,4 +56,16 @@ val Typography = Typography(
         lineHeight = 16.sp,
         letterSpacing = 0.28.sp
     ),
+)
+
+/**
+ * Typography style matching the goalscorer events in Figma (Body/XSmall - Node 107:190):
+ * 12sp, Regular (400) weight, 16.8sp (1.4 leading), 0 letter spacing.
+ */
+val GoalScorerTextStyle = TextStyle(
+    fontFamily = FontFamily.Default,
+    fontWeight = FontWeight.Normal,
+    fontSize = 12.sp,
+    lineHeight = 16.8.sp,
+    letterSpacing = 0.sp
 )

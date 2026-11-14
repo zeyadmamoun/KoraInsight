@@ -4,6 +4,7 @@ import com.zeyadmamoun.network.BuildConfig
 import com.zeyadmamoun.network.model.scoreboard.EspnApiResponse
 import com.zeyadmamoun.network.model.scoreboard.LeagueSlugDto
 import com.zeyadmamoun.network.model.standings.EspnStandingsResponseDto
+import com.zeyadmamoun.network.model.summary.EspnMatchSummaryResponseDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -35,5 +36,14 @@ class KtorNetworkDataSource @Inject constructor(
 
     override suspend fun getStandings(leagueSlug: String): EspnStandingsResponseDto {
         return client.get("https://site.api.espn.com/apis/v2/sports/soccer/$leagueSlug/standings").body()
+    }
+
+    override suspend fun getMatchSummary(leagueSlug: String, eventId: String): EspnMatchSummaryResponseDto {
+        val slug = leagueSlug.ifBlank { "all" }
+        return client.get("https://site.api.espn.com/apis/site/v2/sports/soccer/$slug/summary") {
+            url {
+                parameters.append("event", eventId)
+            }
+        }.body()
     }
 }

@@ -8,6 +8,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import com.zeyadmamoun.fixtures.navigation.matchesEntryProvider
 import com.zeyadmamoun.leagues.leaguesEntryProvider
+import com.zeyadmamoun.matchdetails.navigation.MatchDetailsRoute
 import com.zeyadmamoun.matchdetails.navigation.matchDetailsEntryProvider
 import com.zeyadmamoun.news.navigation.newsEntryProvider
 import com.zeyadmamoun.profile.navigation.profileEntryProvider
@@ -20,7 +21,13 @@ fun KoraInsightNavDisplay(
     NavDisplay(
         backStack = backStack,
         entryProvider = entryProvider {
-            matchesEntryProvider()
+            matchesEntryProvider(
+                onMatchClicked = { matchId, leagueSlug ->
+                    backStack.add(
+                        MatchDetailsRoute(matchId = matchId, leagueSlug = leagueSlug)
+                    )
+                }
+            )
             leaguesEntryProvider()
             profileEntryProvider()
             newsEntryProvider()

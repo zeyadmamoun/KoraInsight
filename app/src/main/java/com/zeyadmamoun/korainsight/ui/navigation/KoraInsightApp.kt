@@ -24,7 +24,12 @@ fun KoraInsightApp(
 ) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        topBar = { KoraInsightsAppBar() }
+        topBar = {
+            when{
+                appState.isTopLevelRoute -> KoraInsightsAppBar()
+                else -> {}
+            }
+        }
     ) { innerPadding ->
         Box(
             modifier = Modifier
@@ -37,32 +42,34 @@ fun KoraInsightApp(
             )
 
             // Subtle gradient scrim that gently fades content behind the floating bar
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(110.dp)
-                    .align(Alignment.BottomCenter)
-                    .background(
-                        Brush.verticalGradient(
-                            colors = listOf(
-                                Color.Transparent,
-                                MaterialTheme.colorScheme.background.copy(alpha = 0.5f),
-                                MaterialTheme.colorScheme.background.copy(alpha = 0.9f)
+            if (appState.isTopLevelRoute){
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(110.dp)
+                        .align(Alignment.BottomCenter)
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(
+                                    Color.Transparent,
+                                    MaterialTheme.colorScheme.background.copy(alpha = 0.5f),
+                                    MaterialTheme.colorScheme.background.copy(alpha = 0.9f)
+                                )
                             )
                         )
-                    )
-            )
+                )
 
-            FloatingBottomNavBar(
-                selectedIndex = appState.selectedBottomBarIndex,
-                items = defaultBottomNavItems,
-                onItemSelected = { index ->
-                    appState.navigateToTopLevelTab(defaultBottomNavItems[index].route)
-                },
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-            )
+                FloatingBottomNavBar(
+                    selectedIndex = appState.selectedBottomBarIndex,
+                    items = defaultBottomNavItems,
+                    onItemSelected = { index ->
+                        appState.navigateToTopLevelTab(defaultBottomNavItems[index].route)
+                    },
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .fillMaxWidth()
+                )
+            }
         }
     }
 }

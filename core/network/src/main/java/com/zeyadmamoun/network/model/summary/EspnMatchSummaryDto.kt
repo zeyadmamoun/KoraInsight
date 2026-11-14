@@ -98,6 +98,12 @@ data class EspnSummaryLogoDto(
 
 @Serializable
 data class EspnSummaryStatusDto(
+    @SerialName("clock")
+    val clock: Double? = null,
+    @SerialName("displayClock")
+    val displayClock: String? = null,
+    @SerialName("period")
+    val period: Int? = null,
     @SerialName("type")
     val type: EspnSummaryStatusTypeDto? = null,
 )

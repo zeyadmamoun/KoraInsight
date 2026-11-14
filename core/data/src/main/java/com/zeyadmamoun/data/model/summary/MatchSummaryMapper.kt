@@ -1,5 +1,6 @@
 package com.zeyadmamoun.data.model.summary
 
+import com.zeyadmamoun.core.common.datetime.toLocalTimeString
 import com.zeyadmamoun.network.model.summary.EspnMatchSummaryResponseDto
 import com.zeyadmamoun.network.model.summary.EspnSummaryBoxscoreTeamDto
 import com.zeyadmamoun.network.model.summary.EspnSummaryKeyEventDto
@@ -76,15 +77,35 @@ fun EspnMatchSummaryResponseDto.toMatchDetails(): MatchDetails {
     // 5. Timeline Events
     val mappedEvents = keyEvents.mapNotNull { it.toMatchTimelineEvent() }
 
+    // 6. Live Status & Current Minute
+    val status = competition?.status
+    val statusType = status?.type
+    val isLive = statusType?.state?.trim().equals("in", ignoreCase = true)
+    val currentMinute = extractLiveMinute(
+        isLive = isLive,
+        displayClock = status?.displayClock,
+        detail = statusType?.detail,
+        shortDetail = statusType?.shortDetail
+    )
+
+    val rawDate = competition?.date.orEmpty()
+    val kickoffTime = if (rawDate.isNotBlank()) {
+        rawDate.toLocalTimeString().takeIf { it != "VS" }.orEmpty()
+    } else {
+        ""
+    }
+
     return MatchDetails(
         id = header?.id ?: competition?.id.orEmpty(),
-        date = competition?.date.orEmpty(),
+        date = rawDate,
+        kickoffTime = kickoffTime,
         leagueName = header?.league?.name.orEmpty(),
         leagueSlug = header?.league?.slug.orEmpty(),
-        statusDescription = competition?.status?.type?.description ?: "Scheduled",
-        statusDetail = competition?.status?.type?.detail
-            ?: competition?.status?.type?.shortDetail.orEmpty(),
-        isCompleted = competition?.status?.type?.completed ?: false,
+        statusDescription = statusType?.description ?: "Scheduled",
+        statusDetail = statusType?.detail ?: statusType?.shortDetail.orEmpty(),
+        isLive = isLive,
+        currentMinute = currentMinute,
+        isCompleted = statusType?.completed ?: false,
 
         // Home Team
         homeTeamId = homeTeamId,
@@ -155,6 +176,31 @@ fun EspnMatchSummaryResponseDto.toMatchDetails(): MatchDetails {
  */
 private fun EspnSummaryBoxscoreTeamDto?.findStat(statName: String): String {
     return this?.statistics?.firstOrNull { it.name.equals(statName, ignoreCase = true) }?.displayValue.orEmpty()
+}
+
+/**
+ * Extracts the current broadcast minute when the match is live, or empty string otherwise.
+ */
+private fun extractLiveMinute(
+    isLive: Boolean,
+    displayClock: String?,
+    detail: String?,
+    shortDetail: String?,
+): String {
+    if (!isLive) return ""
+
+    val trimmedDetail = detail?.trim()
+    val trimmedShortDetail = shortDetail?.trim()
+    val trimmedClock = displayClock?.trim()
+
+    return when {
+        trimmedDetail.equals("HT", ignoreCase = true) ||
+            trimmedShortDetail.equals("HT", ignoreCase = true) -> "HT"
+        !trimmedClock.isNullOrBlank() -> trimmedClock
+        !trimmedDetail.isNullOrBlank() -> trimmedDetail
+        !trimmedShortDetail.isNullOrBlank() -> trimmedShortDetail
+        else -> ""
+    }
 }
 
 /**

@@ -9,10 +9,13 @@ package com.zeyadmamoun.data.model.summary
 data class MatchDetails(
     val id: String = "",
     val date: String = "",
+    val kickoffTime: String = "",
     val leagueName: String = "",
     val leagueSlug: String = "",
     val statusDescription: String = "",
     val statusDetail: String = "",
+    val isLive: Boolean = false,
+    val currentMinute: String = "",
     val isCompleted: Boolean = false,
 
     // Home Team Info
@@ -71,7 +74,23 @@ data class MatchDetails(
     val events: List<MatchTimelineEvent> = emptyList(),
     val homeLineup: List<MatchPlayer> = emptyList(),
     val awayLineup: List<MatchPlayer> = emptyList(),
-)
+) {
+    val matchTime: String get() = kickoffTime
+    val scoreText: String get() = toScoreText()
+}
+
+/**
+ * Returns kickoff time if the match hasn't started, or current score ("1 - 0") if live or finished.
+ */
+fun MatchDetails.toScoreText(): String {
+    return if (!isLive && !isCompleted) {
+        kickoffTime.ifBlank { "VS" }
+    } else {
+        "$homeTeamScore - $awayTeamScore"
+    }
+}
+
+fun MatchDetails.toMatchScore(): String = toScoreText()
 
 /**
  * Flat key-value comparison for a specific match statistic.
