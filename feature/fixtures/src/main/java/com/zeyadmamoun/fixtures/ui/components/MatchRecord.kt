@@ -1,6 +1,8 @@
 package com.zeyadmamoun.fixtures.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -32,7 +34,11 @@ import com.zeyadmamoun.fixtures.util.toDisplayBadge
 import com.zeyadmamoun.fixtures.util.toScoreText
 
 @Composable
-fun MatchRecord(match: Match){
+fun MatchRecord(
+    match: Match,
+    league: String,
+    onRecordClicked: (String, String) -> Unit = {_, _ ->}
+){
     val homeTeam = remember(match.id) { match.homeTeam }
     val awayTeam = remember(match.id) { match.awayTeam }
     val scoreText = remember(match.id) { match.toScoreText() }
@@ -42,6 +48,13 @@ fun MatchRecord(match: Match){
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth()
             .padding(horizontal = 12.dp, vertical = 14.dp)
+            .clickable(
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() },
+                onClick = {
+                    onRecordClicked(match.id, league)
+                }
+            )
     ) {
         // Match status badge
         Box(

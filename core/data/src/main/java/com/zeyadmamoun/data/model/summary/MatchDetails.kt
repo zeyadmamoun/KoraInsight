@@ -9,10 +9,13 @@ package com.zeyadmamoun.data.model.summary
 data class MatchDetails(
     val id: String = "",
     val date: String = "",
+    val kickoffTime: String = "",
     val leagueName: String = "",
     val leagueSlug: String = "",
     val statusDescription: String = "",
     val statusDetail: String = "",
+    val isLive: Boolean = false,
+    val currentMinute: String = "",
     val isCompleted: Boolean = false,
 
     // Home Team Info
@@ -71,7 +74,23 @@ data class MatchDetails(
     val events: List<MatchTimelineEvent> = emptyList(),
     val homeLineup: List<MatchPlayer> = emptyList(),
     val awayLineup: List<MatchPlayer> = emptyList(),
-)
+) {
+    val matchTime: String get() = kickoffTime
+    val scoreText: String get() = toScoreText()
+}
+
+/**
+ * Returns kickoff time if the match hasn't started, or current score ("1 - 0") if live or finished.
+ */
+fun MatchDetails.toScoreText(): String {
+    return if (!isLive && !isCompleted) {
+        kickoffTime.ifBlank { "VS" }
+    } else {
+        "$homeTeamScore - $awayTeamScore"
+    }
+}
+
+fun MatchDetails.toMatchScore(): String = toScoreText()
 
 /**
  * Flat key-value comparison for a specific match statistic.
@@ -84,21 +103,28 @@ data class MatchStatItem(
 )
 
 /**
- * Flattened timeline event (goal, card, substitution, etc.).
+ * Flattened timeline event (goal, card, substitution, period divider, etc.).
  */
 data class MatchTimelineEvent(
-    val id: String,
-    val minute: String,
-    val type: String,
+    val id: String = "",
+    val minute: String = "",
+    val type: String = "",
     val isGoal: Boolean = false,
+    val isPenalty: Boolean = false,
     val isRedCard: Boolean = false,
     val isYellowCard: Boolean = false,
+    val isYellowRedCard: Boolean = false,
     val isSubstitution: Boolean = false,
+    val isPeriodDivider: Boolean = false,
     val text: String = "",
     val teamId: String = "",
     val teamName: String = "",
     val playerName: String = "",
     val assistPlayerName: String? = null,
+    val subPlayerIn: String? = null,
+    val subPlayerOut: String? = null,
+    val periodLabel: String? = null,
+    val periodScore: String? = null,
 )
 
 /**

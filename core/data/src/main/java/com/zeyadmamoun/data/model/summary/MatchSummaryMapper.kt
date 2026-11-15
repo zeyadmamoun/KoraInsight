@@ -1,5 +1,6 @@
 package com.zeyadmamoun.data.model.summary
 
+import com.zeyadmamoun.core.common.datetime.toLocalTimeString
 import com.zeyadmamoun.network.model.summary.EspnMatchSummaryResponseDto
 import com.zeyadmamoun.network.model.summary.EspnSummaryBoxscoreTeamDto
 import com.zeyadmamoun.network.model.summary.EspnSummaryKeyEventDto
@@ -76,15 +77,35 @@ fun EspnMatchSummaryResponseDto.toMatchDetails(): MatchDetails {
     // 5. Timeline Events
     val mappedEvents = keyEvents.mapNotNull { it.toMatchTimelineEvent() }
 
+    // 6. Live Status & Current Minute
+    val status = competition?.status
+    val statusType = status?.type
+    val isLive = statusType?.state?.trim().equals("in", ignoreCase = true)
+    val currentMinute = extractLiveMinute(
+        isLive = isLive,
+        displayClock = status?.displayClock,
+        detail = statusType?.detail,
+        shortDetail = statusType?.shortDetail
+    )
+
+    val rawDate = competition?.date.orEmpty()
+    val kickoffTime = if (rawDate.isNotBlank()) {
+        rawDate.toLocalTimeString().takeIf { it != "VS" }.orEmpty()
+    } else {
+        ""
+    }
+
     return MatchDetails(
         id = header?.id ?: competition?.id.orEmpty(),
-        date = competition?.date.orEmpty(),
+        date = rawDate,
+        kickoffTime = kickoffTime,
         leagueName = header?.league?.name.orEmpty(),
         leagueSlug = header?.league?.slug.orEmpty(),
-        statusDescription = competition?.status?.type?.description ?: "Scheduled",
-        statusDetail = competition?.status?.type?.detail
-            ?: competition?.status?.type?.shortDetail.orEmpty(),
-        isCompleted = competition?.status?.type?.completed ?: false,
+        statusDescription = statusType?.description ?: "Scheduled",
+        statusDetail = statusType?.detail ?: statusType?.shortDetail.orEmpty(),
+        isLive = isLive,
+        currentMinute = currentMinute,
+        isCompleted = statusType?.completed ?: false,
 
         // Home Team
         homeTeamId = homeTeamId,
@@ -158,16 +179,48 @@ private fun EspnSummaryBoxscoreTeamDto?.findStat(statName: String): String {
 }
 
 /**
+ * Extracts the current broadcast minute when the match is live, or empty string otherwise.
+ */
+private fun extractLiveMinute(
+    isLive: Boolean,
+    displayClock: String?,
+    detail: String?,
+    shortDetail: String?,
+): String {
+    if (!isLive) return ""
+
+    val trimmedDetail = detail?.trim()
+    val trimmedShortDetail = shortDetail?.trim()
+    val trimmedClock = displayClock?.trim()
+
+    return when {
+        trimmedDetail.equals("HT", ignoreCase = true) ||
+            trimmedShortDetail.equals("HT", ignoreCase = true) -> "HT"
+        !trimmedClock.isNullOrBlank() -> trimmedClock
+        !trimmedDetail.isNullOrBlank() -> trimmedDetail
+        !trimmedShortDetail.isNullOrBlank() -> trimmedShortDetail
+        else -> ""
+    }
+}
+
+/**
  * Maps an ESPN key event DTO into a flat [MatchTimelineEvent].
  */
 fun EspnSummaryKeyEventDto.toMatchTimelineEvent(): MatchTimelineEvent? {
     val eventType = type?.text ?: type?.type ?: return null
     val typeLower = eventType.lowercase()
+    val rawText = (text ?: shortText.orEmpty()).lowercase()
 
-    val isGoal = scoringPlay || typeLower.contains("goal")
-    val isRed = typeLower.contains("red")
-    val isYellow = typeLower.contains("yellow")
-    val isSub = typeLower.contains("substitution")
+    val isPenalty = typeLower.contains("penalty") || rawText.contains("penalty")
+    val isYellowRed = typeLower.contains("second yellow") ||
+        typeLower.contains("yellow-red") ||
+        typeLower.contains("yellow card / red card") ||
+        rawText.contains("second yellow") ||
+        rawText.contains("yellow card / red card")
+    val isGoal = (scoringPlay || typeLower.contains("goal")) && !isYellowRed
+    val isRed = (typeLower.contains("red") || rawText.contains("red card")) && !isYellowRed
+    val isYellow = (typeLower.contains("yellow") || rawText.contains("yellow card")) && !isYellowRed
+    val isSub = typeLower.contains("substitution") || rawText.contains("substitution")
 
     val mainAthlete = participants.firstOrNull()?.athlete?.displayName.orEmpty()
     val secondaryAthlete = participants.getOrNull(1)?.athlete?.displayName
@@ -177,14 +230,18 @@ fun EspnSummaryKeyEventDto.toMatchTimelineEvent(): MatchTimelineEvent? {
         minute = clock?.displayValue.orEmpty(),
         type = eventType,
         isGoal = isGoal,
+        isPenalty = isPenalty,
         isRedCard = isRed,
         isYellowCard = isYellow,
+        isYellowRedCard = isYellowRed,
         isSubstitution = isSub,
         text = text ?: shortText.orEmpty(),
         teamId = team?.id.orEmpty(),
         teamName = team?.displayName.orEmpty(),
         playerName = mainAthlete,
-        assistPlayerName = secondaryAthlete
+        assistPlayerName = if (!isSub) secondaryAthlete else null,
+        subPlayerIn = if (isSub) mainAthlete else null,
+        subPlayerOut = if (isSub) secondaryAthlete else null
     )
 }
 

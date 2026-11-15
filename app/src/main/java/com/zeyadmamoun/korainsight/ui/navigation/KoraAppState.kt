@@ -23,6 +23,9 @@ class KoraAppState(
     val selectedBottomBarIndex: Int
         get() = defaultBottomNavItems.indexOfFirst { it.route == currentRoute }.coerceAtLeast(0)
 
+    val isTopLevelRoute: Boolean
+        get() = defaultBottomNavItems.any { it.route == currentRoute }
+
     fun navigateToTopLevelTab(route: NavKey) {
         if (currentRoute != route) {
             backStack.clear()

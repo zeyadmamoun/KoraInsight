@@ -50,6 +50,7 @@ import com.zeyadmamoun.data.model.scoreboard.Scoreboard
 @Composable
 fun LeagueDropDownScheduleCard(
     scoreboard: Scoreboard,
+    onMatchClicked: (String, String) -> Unit = {_, _ ->}
 ){
     val logos = scoreboard.leagues.firstOrNull()?.logos.orEmpty()
     val leagueLogo = if (isSystemInDarkTheme() && logos.size > 1) logos[1] else logos.firstOrNull()
@@ -129,7 +130,11 @@ fun LeagueDropDownScheduleCard(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 scoreboard.matches.forEach { match ->
-                    MatchRecord(match = match)
+                    MatchRecord(
+                        match = match,
+                        league = scoreboard.leagues[0].slug,
+                        onRecordClicked = onMatchClicked
+                    )
                 }
             }
         }
