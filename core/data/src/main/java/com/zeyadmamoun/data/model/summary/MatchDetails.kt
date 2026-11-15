@@ -103,21 +103,28 @@ data class MatchStatItem(
 )
 
 /**
- * Flattened timeline event (goal, card, substitution, etc.).
+ * Flattened timeline event (goal, card, substitution, period divider, etc.).
  */
 data class MatchTimelineEvent(
-    val id: String,
-    val minute: String,
-    val type: String,
+    val id: String = "",
+    val minute: String = "",
+    val type: String = "",
     val isGoal: Boolean = false,
+    val isPenalty: Boolean = false,
     val isRedCard: Boolean = false,
     val isYellowCard: Boolean = false,
+    val isYellowRedCard: Boolean = false,
     val isSubstitution: Boolean = false,
+    val isPeriodDivider: Boolean = false,
     val text: String = "",
     val teamId: String = "",
     val teamName: String = "",
     val playerName: String = "",
     val assistPlayerName: String? = null,
+    val subPlayerIn: String? = null,
+    val subPlayerOut: String? = null,
+    val periodLabel: String? = null,
+    val periodScore: String? = null,
 )
 
 /**

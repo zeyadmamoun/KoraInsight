@@ -7,6 +7,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -20,18 +21,22 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ElevatedAssistChip
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -43,12 +48,17 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.zeyadmamoun.data.model.summary.MatchDetails
+import com.zeyadmamoun.matchdetails.components.AiMatchAnalysisCard
 import com.zeyadmamoun.matchdetails.components.CollapsedMatchDetailsAppBar
 import com.zeyadmamoun.matchdetails.components.ExpandedMatchDetailsAppBar
+import com.zeyadmamoun.matchdetails.components.MatchDetailsSegments
+import com.zeyadmamoun.matchdetails.components.MatchTimelineCard
+import com.zeyadmamoun.matchdetails.components.SingleChoiceSegmentedButton
 
 /**
  * Starter screen for the Match Details feature.
@@ -114,15 +124,19 @@ fun MatchDetailsScreen(
             .nestedScroll(nestedScrollConnection),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Collapsed: standard TopAppBar with back button + inline match info
+        // TopAppBar: always visible with back button
         TopAppBar(
+            actions = {
+                IconButton(onClick = {}) { Icon(imageVector = Icons.Filled.Notifications, contentDescription = "follow") }
+                IconButton(onClick = {}) { Icon(imageVector = Icons.Filled.Share, contentDescription = "follow") }
+            },
             windowInsets = WindowInsets(top = 0.dp),
             colors = TopAppBarDefaults.topAppBarColors().copy(
                 scrolledContainerColor = MaterialTheme.colorScheme.surface,
                 containerColor = MaterialTheme.colorScheme.surface
             ),
             title = {
-                if (isCollapsed) {
+                if (isCollapsed && uiState is MatchDetailsUiState.Success) {
                     CollapsedMatchDetailsAppBar(matchDetails = matchDetails)
                 }
             },
@@ -136,48 +150,107 @@ fun MatchDetailsScreen(
             }
         )
 
-        // Expanded header: shows teams + scores + goals, collapses away on scroll
-        AnimatedVisibility(
-            visible = !isCollapsed,
-            enter = expandVertically(expandFrom = Alignment.Top) + fadeIn(),
-            exit = shrinkVertically(shrinkTowards = Alignment.Top) + fadeOut()
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(appBarShape)
-                    .background(MaterialTheme.colorScheme.surface)
-            ) {
-                ExpandedMatchDetailsAppBar(
-                    matchDetails = matchDetails,
+        when (val state = uiState) {
+            is MatchDetailsUiState.Loading -> {
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 8.dp, bottom = 16.dp)
-                )
-            }
-        }
-
-        LazyColumn(
-            contentPadding = PaddingValues(
-                horizontal = 16.dp,
-                vertical = 12.dp
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-        ) {
-            item {
-                Card(
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors().copy(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
-                    )
+                        .weight(1f),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Column() { }
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.primary
+                    )
                 }
             }
-            item {
-                Spacer(Modifier.height(600.dp))
+            is MatchDetailsUiState.Error -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .padding(24.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Text(
+                            text = state.message,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.error,
+                            textAlign = TextAlign.Center
+                        )
+                        ElevatedAssistChip(
+                            onClick = { viewModel.loadMatchDetails(matchId, leagueSlug, isForceRefresh = true) },
+                            label = { Text("Retry") }
+                        )
+                    }
+                }
+            }
+            is MatchDetailsUiState.Success -> {
+                val currentMatch = state.matchDetails
+
+                // Expanded header: shows teams + scores + goals, collapses away on scroll
+                AnimatedVisibility(
+                    visible = !isCollapsed,
+                    enter = expandVertically(expandFrom = Alignment.Top) + fadeIn(),
+                    exit = shrinkVertically(shrinkTowards = Alignment.Top) + fadeOut()
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(appBarShape)
+                            .background(MaterialTheme.colorScheme.surface)
+                    ) {
+                        ExpandedMatchDetailsAppBar(
+                            matchDetails = currentMatch,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 8.dp, bottom = 16.dp)
+                        )
+                    }
+                }
+
+                var selectedSegmentIndex by remember { mutableIntStateOf(0) }
+
+                LazyColumn(
+                    contentPadding = PaddingValues(
+                        horizontal = 16.dp,
+                        vertical = 12.dp
+                    ),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .padding(bottom = 16.dp)
+                ) {
+                    item {
+                        SingleChoiceSegmentedButton(
+                            selectedSegmentIndex = selectedSegmentIndex,
+                            onSegmentSelected = { selectedSegmentIndex = it }
+                        )
+                    }
+
+                    item {
+                        when (
+                            MatchDetailsSegments.entries[selectedSegmentIndex]
+                        ) {
+                            MatchDetailsSegments.Summary -> {
+                                MatchTimelineCard(currentMatch)
+                            }
+
+                            MatchDetailsSegments.Lineup -> Spacer(Modifier.height(600.dp))
+                            MatchDetailsSegments.Table -> Spacer(Modifier.height(600.dp))
+                            MatchDetailsSegments.Analytics -> {
+                                AiMatchAnalysisCard(
+                                    onAnalyzeClick = onAnalyzeClick
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
     }
