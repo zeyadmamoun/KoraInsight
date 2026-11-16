@@ -58,6 +58,7 @@ import com.zeyadmamoun.matchdetails.components.CollapsedMatchDetailsAppBar
 import com.zeyadmamoun.matchdetails.components.ExpandedMatchDetailsAppBar
 import com.zeyadmamoun.matchdetails.components.MatchDetailsSegments
 import com.zeyadmamoun.matchdetails.components.MatchTimelineCard
+import com.zeyadmamoun.matchdetails.components.ModelDownloadBottomSheet
 import com.zeyadmamoun.matchdetails.components.SingleChoiceSegmentedButton
 
 /**
@@ -93,6 +94,8 @@ fun MatchDetailsScreen(
     val density = LocalDensity.current
     val collapseThresholdPx = with(density) { 50.dp.toPx() }
     var accumulatedScroll by remember { mutableFloatStateOf(0f) }
+
+    var showBottomSheet by remember { mutableStateOf(false) }
 
     val nestedScrollConnection = remember {
         object : NestedScrollConnection {
@@ -245,13 +248,21 @@ fun MatchDetailsScreen(
                             MatchDetailsSegments.Table -> Spacer(Modifier.height(600.dp))
                             MatchDetailsSegments.Analytics -> {
                                 AiMatchAnalysisCard(
-                                    onAnalyzeClick = onAnalyzeClick
+                                    onAnalyzeClick = {
+                                        showBottomSheet = true
+                                    }
                                 )
                             }
                         }
                     }
                 }
             }
+        }
+        if (showBottomSheet){
+            ModelDownloadBottomSheet(
+                onConfirmClick = { selection -> showBottomSheet = selection },
+                onDismissClick = { selection -> showBottomSheet = selection },
+            )
         }
     }
 }

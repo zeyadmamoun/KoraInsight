@@ -18,6 +18,7 @@ secretsPlugin = "2.0.1"
 coil = "2.7.0"
 hilt = "2.60.1"
 ksp = "2.3.13"
+lottie = "6.7.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -63,6 +64,9 @@ coil-svg = { group = "io.coil-kt", name = "coil-svg", version.ref = "coil" }
 #hilt
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
+
+#lottie animations
+lottie = { group = "com.airbnb.android", name = "lottie-compose", version.ref = "lottie" }
 
 #Those three libs and artifacts are needed
 #to get the classes that will help us to create convention plugins
