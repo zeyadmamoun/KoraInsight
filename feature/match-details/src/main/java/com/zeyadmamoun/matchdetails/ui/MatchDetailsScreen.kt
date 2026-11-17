@@ -53,6 +53,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.zeyadmamoun.data.model.summary.MatchDetails
+import com.zeyadmamoun.matchdetails.R
 import com.zeyadmamoun.matchdetails.components.AiMatchAnalysisCard
 import com.zeyadmamoun.matchdetails.components.CollapsedMatchDetailsAppBar
 import com.zeyadmamoun.matchdetails.components.ExpandedMatchDetailsAppBar
@@ -260,6 +261,7 @@ fun MatchDetailsScreen(
         }
         if (showBottomSheet){
             ModelDownloadBottomSheet(
+                animationRes = R.raw.korainsight_btm_sheet,
                 onConfirmClick = { selection -> showBottomSheet = selection },
                 onDismissClick = { selection -> showBottomSheet = selection },
             )

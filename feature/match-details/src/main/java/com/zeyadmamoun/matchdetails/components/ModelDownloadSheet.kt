@@ -1,11 +1,13 @@
 package com.zeyadmamoun.matchdetails.components
 
+import androidx.annotation.RawRes
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -18,6 +20,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -32,10 +35,13 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ModelDownloadBottomSheet(
+    @RawRes animationRes: Int,
     onDismissClick: (Boolean) -> Unit = {},
     onConfirmClick: (Boolean) -> Unit = {}
 ) {
-    val stateSheet = rememberModalBottomSheetState()
+    val stateSheet = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true
+    )
     val scope = rememberCoroutineScope()
 
     ModalBottomSheet(
@@ -46,7 +52,8 @@ fun ModelDownloadBottomSheet(
                 onDismissClick(false)
             }
         },
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier.wrapContentHeight()
     ) {
         Column(
             modifier = Modifier
@@ -56,7 +63,7 @@ fun ModelDownloadBottomSheet(
         ) {
 
             // 1. Lottie File Animation
-            val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.korainsight_btm_sheet))
+            val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(animationRes))
             val progress by animateLottieCompositionAsState(
                 composition = composition,
                 iterations = LottieConstants.IterateForever
@@ -77,7 +84,7 @@ fun ModelDownloadBottomSheet(
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "We will download an on-device AI model to run match analysis and tactical insights directly on your device.",
+                text = stringResource(R.string.analysis_model_download_desc),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
@@ -97,7 +104,7 @@ fun ModelDownloadBottomSheet(
                 shape = RoundedCornerShape(14.dp)
             ) {
                 Text(
-                    text = "Confirm & Download",
+                    text = stringResource(R.string.confirm_download),
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
                 )
             }
