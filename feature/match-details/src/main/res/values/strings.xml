@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="analysis_model_download_desc">We will download an on-device AI model to run match analysis and tactical insights directly on your device.</string>
+    <string name="analysis_model_download_desc">We will download an on-device AI model (%1$s MB) to run match analysis and tactical insights directly on your device.</string>
     <string name="confirm_download"><![CDATA[Confirm & Download]]></string>
+    <string name="cancel_download">Cancel</string>
 </resources>

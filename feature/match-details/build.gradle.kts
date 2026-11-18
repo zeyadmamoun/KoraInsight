@@ -12,4 +12,5 @@ android {
 dependencies {
     implementation(libs.material)
     implementation(libs.lottie)
+    implementation(project(":core:ai"))
 }

@@ -25,6 +25,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.zeyadmamoun.core.common.result.NetworkStatus
 import com.zeyadmamoun.data.model.scoreboard.Match
 import com.zeyadmamoun.data.model.scoreboard.Scoreboard
 import com.zeyadmamoun.data.model.scoreboard.Status
@@ -33,7 +34,6 @@ import com.zeyadmamoun.fixtures.ui.components.LeagueDropDownScheduleCard
 import com.zeyadmamoun.fixtures.ui.components.MatchRecord
 import com.zeyadmamoun.fixtures.ui.components.matchesShimmerLoading
 import com.zeyadmamoun.fixtures.ui.components.rememberShimmerBrush
-import com.zeyadmamoun.fixtures.ui.utils.MatchesNetworkStatus
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -70,10 +70,10 @@ fun MatchesScreen(
             }
 
             when (val status = state.networkStatus) {
-                is MatchesNetworkStatus.Loading -> {
+                is NetworkStatus.Loading -> {
                     matchesShimmerLoading(brush = shimmerBrush, count = 3)
                 }
-                is MatchesNetworkStatus.Success -> {
+                is NetworkStatus.Success -> {
                     if (state.scoreboards.isEmpty()) {
                         item {
                             EmptyMatchesPlaceholder()
@@ -88,7 +88,7 @@ fun MatchesScreen(
                         }
                     }
                 }
-                is MatchesNetworkStatus.Error -> {
+                is NetworkStatus.Error -> {
                     item {
                         ErrorMatchesPlaceholder(
                             message = status.message,

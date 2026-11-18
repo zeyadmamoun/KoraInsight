@@ -1,5 +1,10 @@
 package com.zeyadmamoun.matchdetails.ui
 
+import android.app.DownloadManager
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.expandVertically
@@ -33,6 +38,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -47,11 +53,14 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.zeyadmamoun.core.common.result.NetworkStatus
 import com.zeyadmamoun.data.model.summary.MatchDetails
 import com.zeyadmamoun.matchdetails.R
 import com.zeyadmamoun.matchdetails.components.AiMatchAnalysisCard
@@ -74,9 +83,9 @@ import com.zeyadmamoun.matchdetails.components.SingleChoiceSegmentedButton
 fun MatchDetailsScreen(
     matchId: String,
     leagueSlug: String,
-    onAnalyzeClick: () -> Unit = {},
     onBackClick: () -> Unit = {},
-    viewModel: MatchDetailsViewModel = viewModel()
+    viewModel: MatchDetailsViewModel = viewModel(),
+    analyticsViewModel: MatchAnalyticsViewModel = viewModel()
 ) {
     LaunchedEffect(matchId, leagueSlug) {
         if (matchId.isNotBlank()) {
@@ -84,8 +93,34 @@ fun MatchDetailsScreen(
         }
     }
 
+    val context = LocalContext.current
+
+    // Register BroadcastReceiver to listen for DownloadManager completion
+    DisposableEffect(context) {
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(ctxt: Context?, intent: Intent?) {
+                if (intent?.action == DownloadManager.ACTION_DOWNLOAD_COMPLETE) {
+                    analyticsViewModel.onDownloadCompleted()
+                }
+            }
+        }
+
+        val intentFilter = IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
+        ContextCompat.registerReceiver(
+            context,
+            receiver,
+            intentFilter,
+            ContextCompat.RECEIVER_EXPORTED
+        )
+
+        onDispose {
+            context.unregisterReceiver(receiver)
+        }
+    }
+
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val matchDetails = (uiState as? MatchDetailsUiState.Success)?.matchDetails ?: MatchDetails(
+    val analyticsUiState by analyticsViewModel.uiState.collectAsStateWithLifecycle()
+    val matchDetails = uiState.matchDetails ?: MatchDetails(
         id = matchId,
         leagueSlug = leagueSlug
     )
@@ -97,6 +132,13 @@ fun MatchDetailsScreen(
     var accumulatedScroll by remember { mutableFloatStateOf(0f) }
 
     var showBottomSheet by remember { mutableStateOf(false) }
+
+    // Auto-dismiss the sheet once download finishes successfully
+    LaunchedEffect(analyticsUiState.isModelDownloaded) {
+        if (analyticsUiState.isModelDownloaded) {
+            showBottomSheet = false
+        }
+    }
 
     val nestedScrollConnection = remember {
         object : NestedScrollConnection {
@@ -140,7 +182,7 @@ fun MatchDetailsScreen(
                 containerColor = MaterialTheme.colorScheme.surface
             ),
             title = {
-                if (isCollapsed && uiState is MatchDetailsUiState.Success) {
+                if (isCollapsed && uiState.networkStatus is NetworkStatus.Success) {
                     CollapsedMatchDetailsAppBar(matchDetails = matchDetails)
                 }
             },
@@ -154,8 +196,8 @@ fun MatchDetailsScreen(
             }
         )
 
-        when (val state = uiState) {
-            is MatchDetailsUiState.Loading -> {
+        when (val state = uiState.networkStatus) {
+            is NetworkStatus.Loading -> {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -167,7 +209,7 @@ fun MatchDetailsScreen(
                     )
                 }
             }
-            is MatchDetailsUiState.Error -> {
+            is NetworkStatus.Error -> {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -192,8 +234,8 @@ fun MatchDetailsScreen(
                     }
                 }
             }
-            is MatchDetailsUiState.Success -> {
-                val currentMatch = state.matchDetails
+            is NetworkStatus.Success -> {
+                val currentMatch = uiState.matchDetails ?: MatchDetails()
 
                 // Expanded header: shows teams + scores + goals, collapses away on scroll
                 AnimatedVisibility(
@@ -248,11 +290,15 @@ fun MatchDetailsScreen(
                             MatchDetailsSegments.Lineup -> Spacer(Modifier.height(600.dp))
                             MatchDetailsSegments.Table -> Spacer(Modifier.height(600.dp))
                             MatchDetailsSegments.Analytics -> {
-                                AiMatchAnalysisCard(
-                                    onAnalyzeClick = {
-                                        showBottomSheet = true
-                                    }
-                                )
+                                if (analyticsUiState.isModelDownloaded){
+
+                                } else {
+                                    AiMatchAnalysisCard(
+                                        onAnalyzeClick = {
+                                            showBottomSheet = true
+                                        }
+                                    )
+                                }
                             }
                         }
                     }
@@ -261,8 +307,16 @@ fun MatchDetailsScreen(
         }
         if (showBottomSheet){
             ModelDownloadBottomSheet(
+                isDownloading = analyticsUiState.isDownloadingModel,
+                downloadPercentage = analyticsUiState.downloadProgress,
                 animationRes = R.raw.korainsight_btm_sheet,
-                onConfirmClick = { selection -> showBottomSheet = selection },
+                onConfirmClick = {
+                    if (analyticsUiState.isDownloadingModel){
+                        analyticsViewModel.cancelModelDownloading()
+                    } else {
+                        analyticsViewModel.downloadAnalysisModel()
+                    }
+                },
                 onDismissClick = { selection -> showBottomSheet = selection },
             )
         }
