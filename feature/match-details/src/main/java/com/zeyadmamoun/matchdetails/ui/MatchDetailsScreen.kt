@@ -64,6 +64,7 @@ import com.zeyadmamoun.core.common.result.NetworkStatus
 import com.zeyadmamoun.data.model.summary.MatchDetails
 import com.zeyadmamoun.matchdetails.R
 import com.zeyadmamoun.matchdetails.components.AiMatchAnalysisCard
+import com.zeyadmamoun.matchdetails.components.AiModelChatBox
 import com.zeyadmamoun.matchdetails.components.CollapsedMatchDetailsAppBar
 import com.zeyadmamoun.matchdetails.components.ExpandedMatchDetailsAppBar
 import com.zeyadmamoun.matchdetails.components.MatchDetailsSegments
@@ -72,11 +73,14 @@ import com.zeyadmamoun.matchdetails.components.ModelDownloadBottomSheet
 import com.zeyadmamoun.matchdetails.components.SingleChoiceSegmentedButton
 
 /**
- * Starter screen for the Match Details feature.
+ * Displays match details with a collapsible score header, segmented tab views
+ * (Summary, Lineup, Table, Analytics), and on-device AI tactical analysis.
  *
  * @param matchId Identifier for the match.
  * @param leagueSlug League slug identifier (e.g. "eng.1").
  * @param onBackClick Callback invoked when navigating back.
+ * @param viewModel ViewModel providing match details and network status.
+ * @param analyticsViewModel ViewModel managing on-device AI model download and analytics state.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -260,39 +264,90 @@ fun MatchDetailsScreen(
 
                 var selectedSegmentIndex by remember { mutableIntStateOf(0) }
 
-                LazyColumn(
-                    contentPadding = PaddingValues(
-                        horizontal = 16.dp,
-                        vertical = 12.dp
-                    ),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                SingleChoiceSegmentedButton(
+                    selectedSegmentIndex = selectedSegmentIndex,
+                    onSegmentSelected = { selectedSegmentIndex = it },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                )
+
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f)
-                        .padding(bottom = 16.dp)
                 ) {
-                    item {
-                        SingleChoiceSegmentedButton(
-                            selectedSegmentIndex = selectedSegmentIndex,
-                            onSegmentSelected = { selectedSegmentIndex = it }
-                        )
-                    }
-
-                    item {
-                        when (
-                            MatchDetailsSegments.entries[selectedSegmentIndex]
-                        ) {
-                            MatchDetailsSegments.Summary -> {
-                                MatchTimelineCard(currentMatch)
+                    when (
+                        MatchDetailsSegments.entries[selectedSegmentIndex]
+                    ) {
+                        MatchDetailsSegments.Summary -> {
+                            LazyColumn(
+                                contentPadding = PaddingValues(
+                                    horizontal = 16.dp,
+                                    vertical = 12.dp
+                                ),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(bottom = 16.dp)
+                            ) {
+                                item {
+                                    MatchTimelineCard(currentMatch)
+                                }
                             }
+                        }
 
-                            MatchDetailsSegments.Lineup -> Spacer(Modifier.height(600.dp))
-                            MatchDetailsSegments.Table -> Spacer(Modifier.height(600.dp))
-                            MatchDetailsSegments.Analytics -> {
-                                if (analyticsUiState.isModelDownloaded){
+                        MatchDetailsSegments.Lineup -> {
+                            LazyColumn(
+                                contentPadding = PaddingValues(
+                                    horizontal = 16.dp,
+                                    vertical = 12.dp
+                                ),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(bottom = 16.dp)
+                            ) {
+                                item { Spacer(Modifier.height(600.dp)) }
+                            }
+                        }
 
-                                } else {
+                        MatchDetailsSegments.Table -> {
+                            LazyColumn(
+                                contentPadding = PaddingValues(
+                                    horizontal = 16.dp,
+                                    vertical = 12.dp
+                                ),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(bottom = 16.dp)
+                            ) {
+                                item { Spacer(Modifier.height(600.dp)) }
+                            }
+                        }
+
+                        MatchDetailsSegments.Analytics -> {
+                            if (analyticsUiState.isModelDownloaded) {
+                                AiModelChatBox(
+                                    modifier = Modifier.fillMaxSize(),
+                                    onSendMessage = { message ->
+                                        analyticsViewModel.sendMessage(message)
+                                    },
+                                    onMessageBoxChange = { message ->
+                                        analyticsViewModel.updateMessageBoxText(message)
+                                    },
+                                    messageBoxText = analyticsUiState.messageBoxText,
+                                    conversation = analyticsUiState.conversations
+                                )
+                            } else {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                                    contentAlignment = Alignment.TopCenter
+                                ) {
                                     AiMatchAnalysisCard(
                                         onAnalyzeClick = {
                                             showBottomSheet = true

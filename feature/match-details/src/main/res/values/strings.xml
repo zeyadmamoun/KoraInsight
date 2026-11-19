@@ -3,4 +3,10 @@
     <string name="analysis_model_download_desc">We will download an on-device AI model (%1$s MB) to run match analysis and tactical insights directly on your device.</string>
     <string name="confirm_download"><![CDATA[Confirm & Download]]></string>
     <string name="cancel_download">Cancel</string>
+    <string name="ask_about_the_game">Ask about the game</string>
+    <string name="ai_assistant_name">Kora AI</string>
+    <string name="ai_assistant_role">Tactical Analyst</string>
+    <string name="ai_welcome_title">Match Intelligence Ready</string>
+    <string name="ai_welcome_subtitle">Ask about tactical formations, key events, xG dynamics, or player performances.</string>
+    <string name="default_sample_message">Hello! I have analyzed the match data. Feel free to ask about key tactics, team formations, momentum shifts, or player ratings.</string>
 </resources>
