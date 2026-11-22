@@ -35,6 +35,7 @@ class AndroidLibraryConventionPlugin: Plugin<Project> {
             tasks.withType<KotlinCompile>().configureEach {
                 compilerOptions {
                     optIn.add("kotlin.time.ExperimentalTime")
+                    freeCompilerArgs.add("-Xskip-metadata-version-check")
                 }
             }
 

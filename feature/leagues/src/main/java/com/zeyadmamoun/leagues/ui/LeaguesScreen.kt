@@ -1,5 +1,7 @@
 package com.zeyadmamoun.leagues.ui
 
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -34,7 +36,9 @@ import com.zeyadmamoun.leagues.ui.components.SelectableLeagueChip
 @Composable
 fun LeagueScreen(
     paddingValues: PaddingValues = PaddingValues(),
-    viewModel: LeaguesViewModel = viewModel()
+    viewModel: LeaguesViewModel = viewModel(
+        viewModelStoreOwner = LocalActivity.current as ComponentActivity
+    ),
 ) {
     val state by viewModel.leaguesUiState.collectAsStateWithLifecycle()
 

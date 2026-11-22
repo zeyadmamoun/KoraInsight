@@ -333,7 +333,10 @@ fun MatchDetailsScreen(
                                 AiModelChatBox(
                                     modifier = Modifier.fillMaxSize(),
                                     onSendMessage = { message ->
-                                        analyticsViewModel.sendMessage(message)
+                                        analyticsViewModel.sendMessage(
+                                            message = message,
+                                            matchDetails = uiState.matchDetails ?: MatchDetails()
+                                        )
                                     },
                                     onMessageBoxChange = { message ->
                                         analyticsViewModel.updateMessageBoxText(message)

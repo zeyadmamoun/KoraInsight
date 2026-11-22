@@ -1,15 +1,23 @@
 package com.zeyadmamoun.matchdetails.ui
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.ai.edge.litertlm.Content
+import com.google.ai.edge.litertlm.Message
 import com.zeyadmamoun.ai.ModelDownloader
+import com.zeyadmamoun.ai.repository.AiChatRepository
+import com.zeyadmamoun.data.model.summary.MatchDetails
 import com.zeyadmamoun.matchdetails.components.ChatMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 /**
@@ -38,7 +46,8 @@ data class MatchAnalyticsUiState(
  */
 @HiltViewModel
 class MatchAnalyticsViewModel @Inject constructor(
-    private val modelDownloader: ModelDownloader
+    private val modelDownloader: ModelDownloader,
+    private val chatRepository: AiChatRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MatchAnalyticsUiState())
@@ -48,6 +57,9 @@ class MatchAnalyticsViewModel @Inject constructor(
     init {
         if (modelDownloader.isModelDownloaded()) {
             _uiState.update { it.copy(isModelDownloaded = true) }
+        }
+        viewModelScope.launch(Dispatchers.Default) {
+            chatRepository.initializeAnalysisModel()
         }
     }
 
@@ -114,17 +126,96 @@ class MatchAnalyticsViewModel @Inject constructor(
         }
     }
 
+    private fun startConvo(matchDetails: MatchDetails) {
+        chatRepository.startConvo(matchDetails.toTacticalSystemPrompt())
+    }
+
     /**
-     * Appends a new [message] to the conversation history and clears the message draft.
+     * Appends a new [message] to the conversation history, initializes the tactical
+     * conversation if needed off the main thread, and streams the AI model response.
      *
-     * @param message The chat message to append.
+     * @param matchDetails The current match details used for tactical prompt context.
+     * @param message The user chat message to append.
      */
-    fun sendMessage(message: ChatMessage) {
-        _uiState.update {
-            it.copy(
-                conversations = it.conversations + message,
+    fun sendMessage(
+        matchDetails: MatchDetails,
+        message: ChatMessage
+    ) {
+        val botPlaceholder = ChatMessage(
+            text = "",
+            isUser = false,
+            isThinking = true
+        )
+
+        _uiState.update { state ->
+            state.copy(
+                conversations = state.conversations + message + botPlaceholder,
                 messageBoxText = ""
             )
         }
+
+        viewModelScope.launch {
+            if (!chatRepository.isConvoActive) {
+                withContext(Dispatchers.Default) {
+                    startConvo(matchDetails)
+                }
+            }
+
+            try {
+                chatRepository.sendMessage(message.text).collect { reply ->
+                    val chunk = reply.modelReply
+                    if (chunk.isNotEmpty()) {
+                        updateMessage(botPlaceholder.id) { current ->
+                            current.copy(
+                                text = current.text + chunk,
+                                isThinking = false
+                            )
+                        }
+                    }
+                }
+                updateMessage(botPlaceholder.id) { current ->
+                    if (current.text.isBlank()) {
+                        current.copy(text = "No response generated. Please try again.", isThinking = false)
+                    } else {
+                        current.copy(isThinking = false)
+                    }
+                }
+            } catch (e: Throwable) {
+                Log.e("MatchAnalyticsViewModel", "Failed to stream chat reply", e)
+                updateMessage(botPlaceholder.id) { current ->
+                    current.copy(
+                        text = "Unable to analyze match right now. Please try again.",
+                        isThinking = false
+                    )
+                }
+            }
+        }
+    }
+
+    private fun updateMessage(messageId: String, transform: (ChatMessage) -> ChatMessage) {
+        _uiState.update { state ->
+            state.copy(
+                conversations = state.conversations.map { msg ->
+                    if (msg.id == messageId) transform(msg) else msg
+                }
+            )
+        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        if (chatRepository.isConvoActive)
+            chatRepository.closeConvo()
     }
 }
+
+val Message.modelReply: String
+    get() {
+        val text = contents.contents.filterIsInstance<Content.Text>()
+            .joinToString("") { it.text }
+        if (text.isNotEmpty()) return text
+        // Take streamed channel text, but ignore the thinking channel
+        return channels.filterKeys { key ->
+            key != "thinking" && key != "thought"
+        }.values.joinToString("")
+    }

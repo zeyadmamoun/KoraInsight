@@ -21,7 +21,7 @@ class ModelDownloader @Inject constructor(
     private val downloader = context.getSystemService<DownloadManager>()
 
     companion object {
-        const val DEFAULT_MODEL_NAME = "qwen2.5-0.5b-instruct.tflite"
+        const val DEFAULT_MODEL_NAME = "qwen3-0.6b.litertlm"
     }
 
     fun getModelFile(fileName: String = DEFAULT_MODEL_NAME): File {

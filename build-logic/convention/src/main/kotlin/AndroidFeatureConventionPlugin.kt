@@ -18,6 +18,7 @@ class AndroidFeatureConventionPlugin: Plugin<Project> {
                 add("implementation", libs.findLibrary("androidx-viewModel-compose").get())
                 add("implementation", libs.findLibrary("androidx-navigation3-runtime").get())
                 add("implementation", libs.findLibrary("androidx-navigation3-ui").get())
+                add("implementation", libs.findLibrary("androidx-lifecycle-viewmodel-navigation3").get())
                 add("implementation", libs.findLibrary("coil-compose").get())
                 add("implementation", libs.findLibrary("coil-svg").get())
                 add("implementation", project(":core"))

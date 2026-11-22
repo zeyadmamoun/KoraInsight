@@ -8,7 +8,7 @@ android {
 }
 
 dependencies {
-    implementation(libs.litert.android)
+    api(libs.litert.android)
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {

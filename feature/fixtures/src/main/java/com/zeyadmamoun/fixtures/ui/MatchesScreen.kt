@@ -1,5 +1,7 @@
 package com.zeyadmamoun.fixtures.ui
 
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,7 +40,9 @@ import com.zeyadmamoun.fixtures.ui.components.rememberShimmerBrush
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MatchesScreen(
-    viewModel: MatchesViewModel = viewModel(),
+    viewModel: MatchesViewModel = viewModel(
+        viewModelStoreOwner = LocalActivity.current as ComponentActivity
+    ),
     onMatchClicked: (String, String) -> Unit = {_, _ ->}
 ) {
     val state by viewModel.matchesUiState.collectAsStateWithLifecycle()

@@ -2,9 +2,11 @@ package com.zeyadmamoun.korainsight.ui.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.zeyadmamoun.fixtures.navigation.matchesEntryProvider
 import com.zeyadmamoun.leagues.leaguesEntryProvider
@@ -20,6 +22,10 @@ fun KoraInsightNavDisplay(
 ){
     NavDisplay(
         backStack = backStack,
+        entryDecorators = listOf(
+            rememberSaveableStateHolderNavEntryDecorator(),
+            rememberViewModelStoreNavEntryDecorator()
+        ),
         entryProvider = entryProvider {
             matchesEntryProvider(
                 onMatchClicked = { matchId, leagueSlug ->
