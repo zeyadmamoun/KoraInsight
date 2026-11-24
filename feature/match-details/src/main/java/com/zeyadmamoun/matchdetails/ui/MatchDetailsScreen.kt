@@ -68,16 +68,19 @@ import com.zeyadmamoun.matchdetails.components.AiModelChatBox
 import com.zeyadmamoun.matchdetails.components.CollapsedMatchDetailsAppBar
 import com.zeyadmamoun.matchdetails.components.ExpandedMatchDetailsAppBar
 import com.zeyadmamoun.matchdetails.components.MatchDetailsSegments
+import com.zeyadmamoun.matchdetails.components.MatchStandingsTable
 import com.zeyadmamoun.matchdetails.components.MatchTimelineCard
+import com.zeyadmamoun.matchdetails.components.MatchVenueInfoCard
 import com.zeyadmamoun.matchdetails.components.ModelDownloadBottomSheet
 import com.zeyadmamoun.matchdetails.components.SingleChoiceSegmentedButton
+import com.zeyadmamoun.matchdetails.components.lineup.MatchLineupSection
 
 /**
  * Displays match details with a collapsible score header, segmented tab views
  * (Summary, Lineup, Table, Analytics), and on-device AI tactical analysis.
  *
- * @param matchId Identifier for the match.
- * @param leagueSlug League slug identifier (e.g. "eng.1").
+ * @param "matchId" Identifier for the match.
+ * @param "leagueSlug" League slug identifier (e.g. "eng.1").
  * @param onBackClick Callback invoked when navigating back.
  * @param viewModel ViewModel providing match details and network status.
  * @param analyticsViewModel ViewModel managing on-device AI model download and analytics state.
@@ -85,18 +88,10 @@ import com.zeyadmamoun.matchdetails.components.SingleChoiceSegmentedButton
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MatchDetailsScreen(
-    matchId: String,
-    leagueSlug: String,
     onBackClick: () -> Unit = {},
     viewModel: MatchDetailsViewModel = viewModel(),
     analyticsViewModel: MatchAnalyticsViewModel = viewModel()
 ) {
-    LaunchedEffect(matchId, leagueSlug) {
-        if (matchId.isNotBlank()) {
-            viewModel.loadMatchDetails(matchId, leagueSlug)
-        }
-    }
-
     val context = LocalContext.current
 
     // Register BroadcastReceiver to listen for DownloadManager completion
@@ -124,10 +119,7 @@ fun MatchDetailsScreen(
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val analyticsUiState by analyticsViewModel.uiState.collectAsStateWithLifecycle()
-    val matchDetails = uiState.matchDetails ?: MatchDetails(
-        id = matchId,
-        leagueSlug = leagueSlug
-    )
+    val matchDetails = uiState.matchDetails ?: MatchDetails()
 
     // Track whether the expanded header is collapsed via scroll
     var isCollapsed by remember { mutableStateOf(false) }
@@ -232,7 +224,7 @@ fun MatchDetailsScreen(
                             textAlign = TextAlign.Center
                         )
                         ElevatedAssistChip(
-                            onClick = { viewModel.loadMatchDetails(matchId, leagueSlug, isForceRefresh = true) },
+                            onClick = { viewModel.loadMatchDetails(isForceRefresh = true) },
                             label = { Text("Retry") }
                         )
                     }
@@ -287,13 +279,16 @@ fun MatchDetailsScreen(
                                     vertical = 12.dp
                                 ),
                                 horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalArrangement = Arrangement.spacedBy(12.dp),
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .padding(bottom = 16.dp)
                             ) {
                                 item {
                                     MatchTimelineCard(currentMatch)
+                                }
+                                item {
+                                    MatchVenueInfoCard(currentMatch)
                                 }
                             }
                         }
@@ -305,26 +300,38 @@ fun MatchDetailsScreen(
                                     vertical = 12.dp
                                 ),
                                 horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .padding(bottom = 16.dp)
                             ) {
-                                item { Spacer(Modifier.height(600.dp)) }
+                                item {
+                                    MatchLineupSection(matchDetails = currentMatch)
+                                }
                             }
                         }
 
                         MatchDetailsSegments.Table -> {
                             LazyColumn(
-                                contentPadding = PaddingValues(
-                                    horizontal = 16.dp,
-                                    vertical = 12.dp
-                                ),
+                                contentPadding = PaddingValues(vertical = 4.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .padding(bottom = 16.dp)
                             ) {
-                                item { Spacer(Modifier.height(600.dp)) }
+                                item {
+                                    MatchStandingsTable(
+                                        standings = uiState.leagueStandings,
+                                        networkStatus = uiState.standingsStatus,
+                                        currentMatch = currentMatch,
+                                        onRetry = {
+                                            viewModel.loadStandings(
+                                                leagueSlug = currentMatch.leagueSlug,
+                                                isForceRefresh = true
+                                            )
+                                        }
+                                    )
+                                }
                             }
                         }
 

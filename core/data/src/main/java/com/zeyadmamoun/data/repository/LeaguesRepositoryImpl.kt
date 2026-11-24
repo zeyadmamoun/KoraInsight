@@ -118,4 +118,25 @@ class LeaguesRepositoryImpl @Inject constructor(
                 emit(Result.Success(standingsList))
             }
         }.flowOn(Dispatchers.IO)
+
+    /**
+     * Retrieves the standings table for a single [leagueSlug].
+     *
+     * @param leagueSlug The league slug identifier (e.g. "eng.1", "esp.1").
+     * @return A cold [Flow] emitting [Result.Loading], [Result.Success], or [Result.Error].
+     */
+    override fun getStandings(leagueSlug: String): Flow<Result<LeagueStandings>> = flow {
+        if (leagueSlug.isBlank()) {
+            emit(Result.Error("League slug cannot be blank"))
+            return@flow
+        }
+        emit(Result.Loading)
+        try {
+            val standings = networkDataSource.getStandings(leagueSlug).toLeagueStandings()
+            emit(Result.Success(standings))
+        } catch (e: Exception) {
+            if (e is CancellationException) throw e
+            emit(Result.Error(e.message ?: "Failed to fetch standings for $leagueSlug"))
+        }
+    }.flowOn(Dispatchers.IO)
 }

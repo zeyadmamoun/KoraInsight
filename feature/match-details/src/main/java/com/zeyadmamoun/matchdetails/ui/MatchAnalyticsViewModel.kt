@@ -57,9 +57,9 @@ class MatchAnalyticsViewModel @Inject constructor(
     init {
         if (modelDownloader.isModelDownloaded()) {
             _uiState.update { it.copy(isModelDownloaded = true) }
-        }
-        viewModelScope.launch(Dispatchers.Default) {
-            chatRepository.initializeAnalysisModel()
+            viewModelScope.launch(Dispatchers.Default) {
+                chatRepository.initializeAnalysisModel()
+            }
         }
     }
 
@@ -99,6 +99,11 @@ class MatchAnalyticsViewModel @Inject constructor(
                 isModelDownloaded = isDownloaded,
                 isDownloadingModel = false
             )
+        }
+        if (isDownloaded) {
+            viewModelScope.launch(Dispatchers.Default) {
+                chatRepository.initializeAnalysisModel()
+            }
         }
     }
 

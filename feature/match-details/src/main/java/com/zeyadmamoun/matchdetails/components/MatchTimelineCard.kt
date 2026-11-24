@@ -379,14 +379,17 @@ private fun EventContent(event: MatchTimelineEvent, isHome: Boolean) {
             // Player Name + Minute
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = if (isHome) Arrangement.End else Arrangement.Start
+                horizontalArrangement = if (isHome) Arrangement.End else Arrangement.Start,
+                modifier = Modifier.fillMaxWidth()
             ) {
                 if (isHome) {
                     Text(
                         text = event.playerName.ifBlank { event.text },
                         style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false),
+                        textAlign = TextAlign.End
                     )
                     Spacer(Modifier.width(6.dp))
                     MinuteBadge(minute = event.minute)
@@ -397,7 +400,9 @@ private fun EventContent(event: MatchTimelineEvent, isHome: Boolean) {
                         text = event.playerName.ifBlank { event.text },
                         style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false),
+                        textAlign = TextAlign.Start
                     )
                 }
             }
@@ -440,7 +445,9 @@ private fun MinuteBadge(minute: String) {
     Text(
         text = formatted,
         style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
-        color = MaterialTheme.colorScheme.primary
+        color = MaterialTheme.colorScheme.primary,
+        maxLines = 1,
+        softWrap = false
     )
 }
 

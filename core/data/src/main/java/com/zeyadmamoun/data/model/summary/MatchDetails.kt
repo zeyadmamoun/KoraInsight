@@ -41,7 +41,11 @@ data class MatchDetails(
     // Venue & Environment Info
     val venueName: String = "",
     val venueCity: String = "",
+    val venueCapacity: Int? = null,
+    val venueImageUrl: String? = null,
     val attendance: Int? = null,
+    val refereeName: String? = null,
+    val ticketUrl: String? = null,
 
     // Core Match Stats (Home vs Away)
     val homePossession: String = "50%",
@@ -77,6 +81,13 @@ data class MatchDetails(
 ) {
     val matchTime: String get() = kickoffTime
     val scoreText: String get() = toScoreText()
+    val buyTicketsUrl: String
+        get() = ticketUrl?.ifBlank { null }
+            ?: if (homeTeamName.isNotBlank() && awayTeamName.isNotBlank()) {
+                "https://www.google.com/search?q=${homeTeamName.replace(' ', '+')}+vs+${awayTeamName.replace(' ', '+')}+tickets"
+            } else {
+                ""
+            }
 }
 
 /**

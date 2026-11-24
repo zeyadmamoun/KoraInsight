@@ -26,8 +26,11 @@ class AiChatRepositoryImpl @Inject constructor(
     }
 
     override fun startConvo(systemInstruction: String) {
-        if (modelEngineConfig.isEngineInitialized())
-            convo = modelEngineConfig.createConvo(systemInstruction)!!
+        if (modelEngineConfig.isEngineInitialized()) {
+            modelEngineConfig.createConvo(systemInstruction)?.let {
+                convo = it
+            }
+        }
     }
 
     override fun sendMessage(message: String): Flow<Message> {
