@@ -9,6 +9,7 @@ import com.google.ai.edge.litertlm.Engine
 import com.google.ai.edge.litertlm.EngineConfig
 import com.google.ai.edge.litertlm.SamplerConfig
 import com.zeyadmamoun.ai.ModelDownloader
+import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -22,31 +23,32 @@ class ModelEngineConfig @Inject constructor(
         private const val TAG = "ModelEngineConfig"
     }
 
-    fun initializeEngine(maxInputToken: Int = 2048) {
+    fun initializeEngine(maxInputToken: Int = 4096) {
         if (isEngineInitialized()) return
         if (!modelDownloader.isModelDownloaded()) {
-            Log.d(TAG, "Model file not downloaded yet. Skipping engine initialization.")
             return
         }
 
         val modelPath = modelDownloader.filePath.path
+        val litertCacheDir = File(modelDownloader.filePath.parentFile?.parentFile, "cache/litert")
+            .apply { mkdirs() }.path
 
         try {
             val config = EngineConfig(
                 modelPath = modelPath,
                 backend = Backend.GPU(),
-                maxNumTokens = maxInputToken
+                maxNumTokens = maxInputToken,
+                cacheDir = litertCacheDir
             )
             engine = Engine(config)
             engine?.initialize()
-            Log.d(TAG, "LiteRT engine initialized successfully with GPU backend.")
         } catch (gpuError: Throwable) {
-            Log.w(TAG, "GPU initialization failed, falling back to CPU.", gpuError)
             try {
                 val config = EngineConfig(
                     modelPath = modelPath,
                     backend = Backend.CPU(),
-                    maxNumTokens = maxInputToken
+                    maxNumTokens = maxInputToken,
+                    cacheDir = litertCacheDir
                 )
                 engine = Engine(config)
                 engine?.initialize()
@@ -69,8 +71,9 @@ class ModelEngineConfig @Inject constructor(
             samplerConfig = SamplerConfig(
                 topK = 40,
                 topP = 0.9,
-                temperature = 0.2
-            )
+                temperature = 0.5
+            ),
+            prefillPrefaceOnInit = true
         )
         return engine?.createConversation(convoConfig)
     }

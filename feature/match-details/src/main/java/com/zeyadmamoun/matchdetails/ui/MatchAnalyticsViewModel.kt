@@ -14,7 +14,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -187,9 +186,10 @@ class MatchAnalyticsViewModel @Inject constructor(
                 }
             } catch (e: Throwable) {
                 Log.e("MatchAnalyticsViewModel", "Failed to stream chat reply", e)
+                val errorMsg = e.localizedMessage?.takeIf { it.isNotBlank() } ?: "Inference error"
                 updateMessage(botPlaceholder.id) { current ->
                     current.copy(
-                        text = "Unable to analyze match right now. Please try again.",
+                        text = "Unable to analyze match ($errorMsg). Please try again.",
                         isThinking = false
                     )
                 }
@@ -219,8 +219,10 @@ val Message.modelReply: String
         val text = contents.contents.filterIsInstance<Content.Text>()
             .joinToString("") { it.text }
         if (text.isNotEmpty()) return text
-        // Take streamed channel text, but ignore the thinking channel
-        return channels.filterKeys { key ->
+        // Take streamed channel text, but ignore the thinking channel if regular text exists
+        val regularText = channels.filterKeys { key ->
             key != "thinking" && key != "thought"
         }.values.joinToString("")
+        if (regularText.isNotEmpty()) return regularText
+        return channels.values.joinToString("")
     }

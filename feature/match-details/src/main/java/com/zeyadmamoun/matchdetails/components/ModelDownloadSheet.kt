@@ -152,7 +152,7 @@ fun NotDownloadedModelDesc(){
     )
     Spacer(modifier = Modifier.height(8.dp))
     Text(
-        text = stringResource(R.string.analysis_model_download_desc, 544),
+        text = stringResource(R.string.analysis_model_download_desc, 2232),
         style = MaterialTheme.typography.bodyMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         textAlign = TextAlign.Center

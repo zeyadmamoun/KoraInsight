@@ -21,7 +21,7 @@ class ModelDownloader @Inject constructor(
     private val downloader = context.getSystemService<DownloadManager>()
 
     companion object {
-        const val DEFAULT_MODEL_NAME = "qwen3-0.6b.litertlm"
+        const val DEFAULT_MODEL_NAME = "gemma-4-e2b-it-gpu.litertlm"
     }
 
     fun getModelFile(fileName: String = DEFAULT_MODEL_NAME): File {
@@ -32,7 +32,7 @@ class ModelDownloader @Inject constructor(
         get() = getModelFile()
 
     fun downloadModel(
-        url: String = context.getString(R.string.qwen_model_uri),
+        url: String = context.getString(R.string.ai_model_uri),
         fileName: String = DEFAULT_MODEL_NAME,
         title: String = "AI Tactical Model",
         description: String = "Downloading on-device intelligence model..."

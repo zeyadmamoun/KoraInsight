@@ -36,7 +36,10 @@ class AiChatRepositoryImpl @Inject constructor(
     override fun sendMessage(message: String): Flow<Message> {
         return if (::convo.isInitialized) {
             convo.sendMessageAsync(message)
-                .catch { Log.d("ModelTracing", "sendMessage: $it") }
+                .catch { e ->
+                    Log.e("AiChatRepositoryImpl", "sendMessage error: $e", e)
+                    throw e
+                }
                 .flowOn(Dispatchers.IO)
         } else {
             throw IllegalStateException("Conversation not initialized")

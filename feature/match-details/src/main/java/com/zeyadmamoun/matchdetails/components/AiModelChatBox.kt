@@ -51,6 +51,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.zeyadmamoun.core.common.datetime.currentFormattedTime
 import com.zeyadmamoun.matchdetails.R
 import java.util.UUID
 
@@ -61,7 +62,7 @@ data class ChatMessage(
     val id: String = UUID.randomUUID().toString(),
     val text: String,
     val isUser: Boolean,
-    val timestamp: String = "Just now",
+    val timestamp: String = currentFormattedTime(),
     val isThinking: Boolean = false
 )
 
