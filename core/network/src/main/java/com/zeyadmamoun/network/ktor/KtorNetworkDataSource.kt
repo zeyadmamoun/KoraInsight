@@ -1,6 +1,8 @@
 package com.zeyadmamoun.network.ktor
 
 import com.zeyadmamoun.network.BuildConfig
+import com.zeyadmamoun.network.model.news.EspnArticleDetailsResponseDto
+import com.zeyadmamoun.network.model.news.EspnNewsResponseDto
 import com.zeyadmamoun.network.model.scoreboard.EspnApiResponse
 import com.zeyadmamoun.network.model.scoreboard.LeagueSlugDto
 import com.zeyadmamoun.network.model.standings.EspnStandingsResponseDto
@@ -45,5 +47,17 @@ class KtorNetworkDataSource @Inject constructor(
                 parameters.append("event", eventId)
             }
         }.body()
+    }
+
+    override suspend fun getNews(leagueSlug: String, limit: Int): EspnNewsResponseDto {
+        return client.get("https://site.api.espn.com/apis/site/v2/sports/soccer/$leagueSlug/news") {
+            url {
+                parameters.append("limit", limit.toString())
+            }
+        }.body()
+    }
+
+    override suspend fun getArticleDetails(articleId: String): EspnArticleDetailsResponseDto {
+        return client.get("https://content.core.api.espn.com/v1/sports/news/$articleId").body()
     }
 }

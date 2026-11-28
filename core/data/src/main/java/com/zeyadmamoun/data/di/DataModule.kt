@@ -6,6 +6,8 @@ import com.zeyadmamoun.data.repository.MatchDetailsRepository
 import com.zeyadmamoun.data.repository.MatchDetailsRepositoryImpl
 import com.zeyadmamoun.data.repository.MatchRepositoryImpl
 import com.zeyadmamoun.data.repository.MatchesRepository
+import com.zeyadmamoun.data.repository.NewsRepository
+import com.zeyadmamoun.data.repository.NewsRepositoryImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -33,4 +35,10 @@ abstract class DataModule {
     abstract fun bindMatchDetailsRepository(
         impl: MatchDetailsRepositoryImpl
     ): MatchDetailsRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindNewsRepository(
+        impl: NewsRepositoryImpl
+    ): NewsRepository
 }

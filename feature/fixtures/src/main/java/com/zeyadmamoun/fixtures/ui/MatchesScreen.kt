@@ -96,7 +96,7 @@ fun MatchesScreen(
                     item {
                         ErrorMatchesPlaceholder(
                             message = status.message,
-                            onRetry = { viewModel.getScoreboards() }
+                            onRetry = { viewModel.refresh() }
                         )
                     }
                 }
