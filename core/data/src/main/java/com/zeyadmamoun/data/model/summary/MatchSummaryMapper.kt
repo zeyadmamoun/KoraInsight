@@ -130,12 +130,17 @@ fun EspnMatchSummaryResponseDto.toMatchDetails(): MatchDetails {
         isAwayWinner = awayCompetitor?.winner ?: false,
 
         // Venue
-        venueName = gameInfo?.venue?.fullName.orEmpty(),
+        venueName = (gameInfo?.venue?.fullName ?: gameInfo?.venue?.shortName).orEmpty(),
         venueCity = listOfNotNull(
             gameInfo?.venue?.address?.city,
             gameInfo?.venue?.address?.country
         ).filter { it.isNotBlank() }.joinToString(", "),
+        venueCapacity = gameInfo?.venue?.capacity,
+        venueImageUrl = gameInfo?.venue?.images?.firstOrNull()?.href,
         attendance = gameInfo?.attendance,
+        refereeName = gameInfo?.officials?.firstOrNull()?.displayName
+            ?: gameInfo?.officials?.firstOrNull()?.fullName,
+        ticketUrl = gameInfo?.tickets?.firstOrNull()?.links?.firstOrNull()?.href,
 
         // Key Stats
         homePossession = homePossession,

@@ -27,4 +27,12 @@ interface LeaguesRepository {
      * - [Result.Error] if [leagueSlugs] is empty or all requests fail.
      */
     fun getStandingsForLeagues(leagueSlugs: List<LeagueSlug>): Flow<Result<List<LeagueStandings>>>
+
+    /**
+     * Retrieves the standings table for a single [leagueSlug].
+     *
+     * @param leagueSlug The league slug identifier (e.g. "eng.1", "esp.1").
+     * @return A cold [Flow] emitting the [Result] of the operation.
+     */
+    fun getStandings(leagueSlug: String): Flow<Result<LeagueStandings>>
 }

@@ -1,5 +1,10 @@
 package com.zeyadmamoun.matchdetails.ui
 
+import android.app.DownloadManager
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.expandVertically
@@ -33,6 +38,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -47,52 +53,88 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.zeyadmamoun.core.common.result.NetworkStatus
 import com.zeyadmamoun.data.model.summary.MatchDetails
+import com.zeyadmamoun.matchdetails.R
 import com.zeyadmamoun.matchdetails.components.AiMatchAnalysisCard
+import com.zeyadmamoun.matchdetails.components.AiModelChatBox
 import com.zeyadmamoun.matchdetails.components.CollapsedMatchDetailsAppBar
 import com.zeyadmamoun.matchdetails.components.ExpandedMatchDetailsAppBar
 import com.zeyadmamoun.matchdetails.components.MatchDetailsSegments
+import com.zeyadmamoun.matchdetails.components.MatchStandingsTable
 import com.zeyadmamoun.matchdetails.components.MatchTimelineCard
+import com.zeyadmamoun.matchdetails.components.MatchVenueInfoCard
+import com.zeyadmamoun.matchdetails.components.ModelDownloadBottomSheet
 import com.zeyadmamoun.matchdetails.components.SingleChoiceSegmentedButton
+import com.zeyadmamoun.matchdetails.components.lineup.MatchLineupSection
 
 /**
- * Starter screen for the Match Details feature.
+ * Displays match details with a collapsible score header, segmented tab views
+ * (Summary, Lineup, Table, Analytics), and on-device AI tactical analysis.
  *
- * @param matchId Identifier for the match.
- * @param leagueSlug League slug identifier (e.g. "eng.1").
+ * @param "matchId" Identifier for the match.
+ * @param "leagueSlug" League slug identifier (e.g. "eng.1").
  * @param onBackClick Callback invoked when navigating back.
+ * @param viewModel ViewModel providing match details and network status.
+ * @param analyticsViewModel ViewModel managing on-device AI model download and analytics state.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MatchDetailsScreen(
-    matchId: String,
-    leagueSlug: String,
-    onAnalyzeClick: () -> Unit = {},
     onBackClick: () -> Unit = {},
-    viewModel: MatchDetailsViewModel = viewModel()
+    viewModel: MatchDetailsViewModel = viewModel(),
+    analyticsViewModel: MatchAnalyticsViewModel = viewModel()
 ) {
-    LaunchedEffect(matchId, leagueSlug) {
-        if (matchId.isNotBlank()) {
-            viewModel.loadMatchDetails(matchId, leagueSlug)
+    val context = LocalContext.current
+
+    // Register BroadcastReceiver to listen for DownloadManager completion
+    DisposableEffect(context) {
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(ctxt: Context?, intent: Intent?) {
+                if (intent?.action == DownloadManager.ACTION_DOWNLOAD_COMPLETE) {
+                    analyticsViewModel.onDownloadCompleted()
+                }
+            }
+        }
+
+        val intentFilter = IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
+        ContextCompat.registerReceiver(
+            context,
+            receiver,
+            intentFilter,
+            ContextCompat.RECEIVER_EXPORTED
+        )
+
+        onDispose {
+            context.unregisterReceiver(receiver)
         }
     }
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val matchDetails = (uiState as? MatchDetailsUiState.Success)?.matchDetails ?: MatchDetails(
-        id = matchId,
-        leagueSlug = leagueSlug
-    )
+    val analyticsUiState by analyticsViewModel.uiState.collectAsStateWithLifecycle()
+    val matchDetails = uiState.matchDetails ?: MatchDetails()
 
     // Track whether the expanded header is collapsed via scroll
     var isCollapsed by remember { mutableStateOf(false) }
     val density = LocalDensity.current
     val collapseThresholdPx = with(density) { 50.dp.toPx() }
     var accumulatedScroll by remember { mutableFloatStateOf(0f) }
+
+    var showBottomSheet by remember { mutableStateOf(false) }
+
+    // Auto-dismiss the sheet once download finishes successfully
+    LaunchedEffect(analyticsUiState.isModelDownloaded) {
+        if (analyticsUiState.isModelDownloaded) {
+            showBottomSheet = false
+        }
+    }
 
     val nestedScrollConnection = remember {
         object : NestedScrollConnection {
@@ -136,7 +178,7 @@ fun MatchDetailsScreen(
                 containerColor = MaterialTheme.colorScheme.surface
             ),
             title = {
-                if (isCollapsed && uiState is MatchDetailsUiState.Success) {
+                if (isCollapsed && uiState.networkStatus is NetworkStatus.Success) {
                     CollapsedMatchDetailsAppBar(matchDetails = matchDetails)
                 }
             },
@@ -150,8 +192,8 @@ fun MatchDetailsScreen(
             }
         )
 
-        when (val state = uiState) {
-            is MatchDetailsUiState.Loading -> {
+        when (val state = uiState.networkStatus) {
+            is NetworkStatus.Loading -> {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -163,7 +205,7 @@ fun MatchDetailsScreen(
                     )
                 }
             }
-            is MatchDetailsUiState.Error -> {
+            is NetworkStatus.Error -> {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -182,14 +224,14 @@ fun MatchDetailsScreen(
                             textAlign = TextAlign.Center
                         )
                         ElevatedAssistChip(
-                            onClick = { viewModel.loadMatchDetails(matchId, leagueSlug, isForceRefresh = true) },
+                            onClick = { viewModel.loadMatchDetails(isForceRefresh = true) },
                             label = { Text("Retry") }
                         )
                     }
                 }
             }
-            is MatchDetailsUiState.Success -> {
-                val currentMatch = state.matchDetails
+            is NetworkStatus.Success -> {
+                val currentMatch = uiState.matchDetails ?: MatchDetails()
 
                 // Expanded header: shows teams + scores + goals, collapses away on scroll
                 AnimatedVisibility(
@@ -214,44 +256,134 @@ fun MatchDetailsScreen(
 
                 var selectedSegmentIndex by remember { mutableIntStateOf(0) }
 
-                LazyColumn(
-                    contentPadding = PaddingValues(
-                        horizontal = 16.dp,
-                        vertical = 12.dp
-                    ),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                SingleChoiceSegmentedButton(
+                    selectedSegmentIndex = selectedSegmentIndex,
+                    onSegmentSelected = { selectedSegmentIndex = it },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                )
+
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f)
-                        .padding(bottom = 16.dp)
                 ) {
-                    item {
-                        SingleChoiceSegmentedButton(
-                            selectedSegmentIndex = selectedSegmentIndex,
-                            onSegmentSelected = { selectedSegmentIndex = it }
-                        )
-                    }
-
-                    item {
-                        when (
-                            MatchDetailsSegments.entries[selectedSegmentIndex]
-                        ) {
-                            MatchDetailsSegments.Summary -> {
-                                MatchTimelineCard(currentMatch)
+                    when (
+                        MatchDetailsSegments.entries[selectedSegmentIndex]
+                    ) {
+                        MatchDetailsSegments.Summary -> {
+                            LazyColumn(
+                                contentPadding = PaddingValues(
+                                    horizontal = 16.dp,
+                                    vertical = 12.dp
+                                ),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(12.dp),
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(bottom = 16.dp)
+                            ) {
+                                item {
+                                    MatchTimelineCard(currentMatch)
+                                }
+                                item {
+                                    MatchVenueInfoCard(currentMatch)
+                                }
                             }
+                        }
 
-                            MatchDetailsSegments.Lineup -> Spacer(Modifier.height(600.dp))
-                            MatchDetailsSegments.Table -> Spacer(Modifier.height(600.dp))
-                            MatchDetailsSegments.Analytics -> {
-                                AiMatchAnalysisCard(
-                                    onAnalyzeClick = onAnalyzeClick
+                        MatchDetailsSegments.Lineup -> {
+                            LazyColumn(
+                                contentPadding = PaddingValues(
+                                    horizontal = 16.dp,
+                                    vertical = 12.dp
+                                ),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(bottom = 16.dp)
+                            ) {
+                                item {
+                                    MatchLineupSection(matchDetails = currentMatch)
+                                }
+                            }
+                        }
+
+                        MatchDetailsSegments.Table -> {
+                            LazyColumn(
+                                contentPadding = PaddingValues(vertical = 4.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(bottom = 16.dp)
+                            ) {
+                                item {
+                                    MatchStandingsTable(
+                                        standings = uiState.leagueStandings,
+                                        networkStatus = uiState.standingsStatus,
+                                        currentMatch = currentMatch,
+                                        onRetry = {
+                                            viewModel.loadStandings(
+                                                leagueSlug = currentMatch.leagueSlug,
+                                                isForceRefresh = true
+                                            )
+                                        }
+                                    )
+                                }
+                            }
+                        }
+
+                        MatchDetailsSegments.Analytics -> {
+                            if (analyticsUiState.isModelDownloaded) {
+                                AiModelChatBox(
+                                    modifier = Modifier.fillMaxSize(),
+                                    onSendMessage = { message ->
+                                        analyticsViewModel.sendMessage(
+                                            message = message,
+                                            matchDetails = uiState.matchDetails ?: MatchDetails()
+                                        )
+                                    },
+                                    onMessageBoxChange = { message ->
+                                        analyticsViewModel.updateMessageBoxText(message)
+                                    },
+                                    messageBoxText = analyticsUiState.messageBoxText,
+                                    conversation = analyticsUiState.conversations
                                 )
+                            } else {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                                    contentAlignment = Alignment.TopCenter
+                                ) {
+                                    AiMatchAnalysisCard(
+                                        onAnalyzeClick = {
+                                            showBottomSheet = true
+                                        }
+                                    )
+                                }
                             }
                         }
                     }
                 }
             }
+        }
+        if (showBottomSheet){
+            ModelDownloadBottomSheet(
+                isDownloading = analyticsUiState.isDownloadingModel,
+                downloadPercentage = analyticsUiState.downloadProgress,
+                animationRes = R.raw.korainsight_btm_sheet,
+                onConfirmClick = {
+                    if (analyticsUiState.isDownloadingModel){
+                        analyticsViewModel.cancelModelDownloading()
+                    } else {
+                        analyticsViewModel.downloadAnalysisModel()
+                    }
+                },
+                onDismissClick = { selection -> showBottomSheet = selection },
+            )
         }
     }
 }

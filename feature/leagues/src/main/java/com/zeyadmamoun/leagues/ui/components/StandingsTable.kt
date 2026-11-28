@@ -72,7 +72,11 @@ fun StandingsTable(
         if (customLegend != null) {
             customLegend()
         } else if (showLegend) {
-            StandingsQualificationLegend()
+            val isUcl = standing.leagueName.contains("Champions League", ignoreCase = true) ||
+                    standing.leagueAbbreviation?.equals("UCL", ignoreCase = true) == true
+            if (isUcl) {
+                StandingsQualificationLegend()
+            }
         }
     }
 }

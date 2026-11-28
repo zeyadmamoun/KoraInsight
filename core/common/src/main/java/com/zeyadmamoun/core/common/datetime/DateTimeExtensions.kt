@@ -61,25 +61,105 @@ fun String.calendarDateToCompactString(): String {
 }
 
 /**
- * Converts an ISO 8601 UTC date string (e.g. "2026-10-31T12:30Z") into local time "HH:mm" (e.g. "14:30").
+ * Normalizes ISO date-time strings by ensuring seconds exist and UTC is assumed when no timezone offset is present.
+ * Examples:
+ * - "2026-11-24T20:00Z" -> "2026-11-24T20:00:00Z"
+ * - "2026-11-24T20:00" -> "2026-11-24T20:00:00Z"
+ * - "2026-11-24T20:00:00Z" -> "2026-11-24T20:00:00Z"
  */
-fun String.toLocalTimeString(timeZone: TimeZone = TimeZone.currentSystemDefault()): String {
+fun normalizeIsoDateTime(isoString: String): String {
+    val s = isoString.trim()
+    if (!s.contains('T')) return s
+
+    val datePart = s.substringBefore('T')
+    val timeWithTz = s.substringAfter('T')
+
+    val tzSuffix: String
+    val timePart: String
+    when {
+        timeWithTz.endsWith("Z", ignoreCase = true) -> {
+            tzSuffix = "Z"
+            timePart = timeWithTz.dropLast(1)
+        }
+        timeWithTz.contains('+') -> {
+            tzSuffix = "+" + timeWithTz.substringAfter('+')
+            timePart = timeWithTz.substringBefore('+')
+        }
+        timeWithTz.contains('-') -> {
+            tzSuffix = "-" + timeWithTz.substringAfter('-')
+            timePart = timeWithTz.substringBefore('-')
+        }
+        else -> {
+            tzSuffix = "Z" // Default soccer fixtures to UTC
+            timePart = timeWithTz
+        }
+    }
+
+    val timeSegments = timePart.split(':')
+    val normalizedTime = when (timeSegments.size) {
+        1 -> "${timeSegments[0]}:00:00"
+        2 -> "${timeSegments[0]}:${timeSegments[1]}:00"
+        else -> timePart
+    }
+
+    return "${datePart}T${normalizedTime}${tzSuffix}"
+}
+
+/**
+ * Parses any ISO 8601 date string into an [Instant], normalizing missing seconds or timezone if needed.
+ */
+fun String.toIsoInstantOrNull(): Instant? {
     return try {
-        val instant = Instant.parse(this)
-        val local = instant.toLocalDateTime(timeZone)
-        val hour = local.hour.toString().padStart(2, '0')
-        val minute = local.minute.toString().padStart(2, '0')
-        "$hour:$minute"
+        Instant.parse(this.trim())
     } catch (_: Exception) {
         try {
-            if (contains('T')) {
-                substringAfter('T').take(5)
-            } else {
-                "VS"
-            }
+            Instant.parse(normalizeIsoDateTime(this))
         } catch (_: Exception) {
-            "VS"
+            null
         }
+    }
+}
+
+/**
+ * Converts an ISO 8601 UTC date string (e.g. "2026-11-24T20:00Z") into local time.
+ * Defaults to 12-hour format "h:mm a" (e.g. "10:00 PM") or "HH:mm" (e.g. "22:00") based on [use12Hour].
+ */
+fun String.toLocalTimeString(
+    timeZone: TimeZone = TimeZone.currentSystemDefault(),
+    use12Hour: Boolean = true
+): String {
+    val instant = this.toIsoInstantOrNull() ?: return try {
+        if (contains('T')) substringAfter('T').take(5) else "VS"
+    } catch (_: Exception) {
+        "VS"
+    }
+
+    val local = instant.toLocalDateTime(timeZone)
+    val minute = local.minute.toString().padStart(2, '0')
+
+    return if (use12Hour) {
+        val hour12 = if (local.hour % 12 == 0) 12 else local.hour % 12
+        val amPm = if (local.hour < 12) "AM" else "PM"
+        "$hour12:$minute $amPm"
+    } else {
+        val hour24 = local.hour.toString().padStart(2, '0')
+        "$hour24:$minute"
+    }
+}
+
+/**
+ * Returns the current time formatted as "h:mm a" (e.g., "7:36 AM") or "HH:mm".
+ */
+fun currentFormattedTime(use12Hour: Boolean = true): String {
+    val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+    val minute = now.minute.toString().padStart(2, '0')
+    return if (use12Hour) {
+        val hour12 = if (now.hour % 12 == 0) 12 else now.hour % 12
+        val amPm = if (now.hour < 12) "AM" else "PM"
+        "$hour12:$minute $amPm"
+    } else {
+        val hour24 = now.hour.toString().padStart(2, '0')
+        "$hour24:$minute"
     }
 }
 

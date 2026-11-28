@@ -4,12 +4,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.zeyadmamoun.core.common.datetime.toCompactDateString
 import com.zeyadmamoun.core.common.datetime.today
+import com.zeyadmamoun.core.common.result.NetworkStatus
 import com.zeyadmamoun.core.common.result.Result
 import com.zeyadmamoun.data.model.scoreboard.LeagueSlug
 import com.zeyadmamoun.data.model.scoreboard.Scoreboard
 import com.zeyadmamoun.data.repository.LeaguesRepository
 import com.zeyadmamoun.data.repository.MatchesRepository
-import com.zeyadmamoun.fixtures.ui.utils.MatchesNetworkStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -73,7 +73,7 @@ class MatchesViewModel @Inject constructor(
             state.copy(
                 selectedDay = day,
                 nearbyDays = updatedDays,
-                networkStatus = MatchesNetworkStatus.Loading
+                networkStatus = NetworkStatus.Loading
             )
         }
         getScoreboards()
@@ -90,7 +90,7 @@ class MatchesViewModel @Inject constructor(
                 when (result) {
                     is Result.Loading -> {
                         if (!isRefresh) {
-                            _matchesUiState.update { it.copy(networkStatus = MatchesNetworkStatus.Loading) }
+                            _matchesUiState.update { it.copy(networkStatus = NetworkStatus.Loading) }
                         }
                     }
 
@@ -106,7 +106,7 @@ class MatchesViewModel @Inject constructor(
                     is Result.Error -> {
                         _matchesUiState.update {
                             it.copy(
-                                networkStatus = MatchesNetworkStatus.Error(
+                                networkStatus = NetworkStatus.Error(
                                     result.message ?: "Failed to fetch leagues"
                                 ),
                                 isRefreshing = false
@@ -121,7 +121,7 @@ class MatchesViewModel @Inject constructor(
     fun getScoreboards(isRefresh: Boolean = false) {
         fetchMatchesJob?.cancel()
         if (!isRefresh) {
-            _matchesUiState.update { it.copy(networkStatus = MatchesNetworkStatus.Loading) }
+            _matchesUiState.update { it.copy(networkStatus = NetworkStatus.Loading) }
         }
 
         fetchMatchesJob = viewModelScope.launch {
@@ -134,7 +134,7 @@ class MatchesViewModel @Inject constructor(
                 when (result) {
                     is Result.Loading -> {
                         if (!isRefresh) {
-                            _matchesUiState.update { it.copy(networkStatus = MatchesNetworkStatus.Loading) }
+                            _matchesUiState.update { it.copy(networkStatus = NetworkStatus.Loading) }
                         }
                     }
 
@@ -145,7 +145,7 @@ class MatchesViewModel @Inject constructor(
                         _matchesUiState.update {
                             it.copy(
                                 scoreboards = activeScoreboards,
-                                networkStatus = MatchesNetworkStatus.Success,
+                                networkStatus = NetworkStatus.Success,
                                 isRefreshing = false
                             )
                         }
@@ -154,7 +154,7 @@ class MatchesViewModel @Inject constructor(
                     is Result.Error -> {
                         _matchesUiState.update {
                             it.copy(
-                                networkStatus = MatchesNetworkStatus.Error(result.message ?: "Failed to fetch matches"),
+                                networkStatus = NetworkStatus.Error(result.message ?: "Failed to fetch matches"),
                                 isRefreshing = false
                             )
                         }
@@ -170,6 +170,6 @@ data class MatchesUiState(
     val selectedDay: LocalDate = Clock.System.today(),
     val leagues: List<LeagueSlug> = emptyList(),
     val scoreboards: List<Scoreboard> = emptyList(),
-    val networkStatus: MatchesNetworkStatus = MatchesNetworkStatus.Loading,
+    val networkStatus: NetworkStatus = NetworkStatus.Loading,
     val isRefreshing: Boolean = false
 )

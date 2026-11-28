@@ -1,5 +1,7 @@
 package com.zeyadmamoun.leagues.ui
 
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -23,18 +25,20 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.zeyadmamoun.core.common.result.NetworkStatus
 import com.zeyadmamoun.data.model.scoreboard.LeagueSlug
 import com.zeyadmamoun.leagues.ui.components.ChampionsLeagueStandingsCard
 import com.zeyadmamoun.leagues.ui.components.LeagueStandingsCard
 import com.zeyadmamoun.leagues.ui.components.LeaguesErrorPlaceholder
 import com.zeyadmamoun.leagues.ui.components.LeaguesHorizontalScroll
 import com.zeyadmamoun.leagues.ui.components.SelectableLeagueChip
-import com.zeyadmamoun.leagues.ui.utils.LeaguesNetworkStatus
 
 @Composable
 fun LeagueScreen(
     paddingValues: PaddingValues = PaddingValues(),
-    viewModel: LeaguesViewModel = viewModel()
+    viewModel: LeaguesViewModel = viewModel(
+        viewModelStoreOwner = LocalActivity.current as ComponentActivity
+    ),
 ) {
     val state by viewModel.leaguesUiState.collectAsStateWithLifecycle()
 
@@ -48,18 +52,18 @@ fun LeagueScreen(
         verticalArrangement = Arrangement.Top
     ) {
         when (val status = state.networkStatus) {
-            is LeaguesNetworkStatus.Loading -> {
+            is NetworkStatus.Loading -> {
                 CircularProgressIndicator()
             }
 
-            is LeaguesNetworkStatus.Error -> {
+            is NetworkStatus.Error -> {
                 LeaguesErrorPlaceholder(
                     message = status.message,
                     onRetry = { viewModel.getLeagues() }
                 )
             }
 
-            is LeaguesNetworkStatus.Success -> {
+            is NetworkStatus.Success -> {
                 if (state.standingsCardData == null || state.leagues.isEmpty()) {
                     LeaguesErrorPlaceholder(
                         message = "No standings available",

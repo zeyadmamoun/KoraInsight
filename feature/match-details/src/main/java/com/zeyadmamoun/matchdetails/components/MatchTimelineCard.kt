@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -37,9 +36,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.zeyadmamoun.core.R
 import com.zeyadmamoun.data.model.summary.MatchDetails
 import com.zeyadmamoun.data.model.summary.MatchTimelineEvent
+import com.zeyadmamoun.matchdetails.R
 
 /**
  * Match Timeline Card corresponding to Figma frame_89.
@@ -292,7 +291,7 @@ private fun EventIcon(event: MatchTimelineEvent) {
     when {
         event.isGoal -> {
             Icon(
-                painter = painterResource(com.zeyadmamoun.matchdetails.R.drawable.ic_football),
+                painter = painterResource(R.drawable.ic_football),
                 contentDescription = if (event.isPenalty) "Penalty Goal" else "Goal",
                 tint = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.size(16.dp)
@@ -300,7 +299,7 @@ private fun EventIcon(event: MatchTimelineEvent) {
         }
         event.isYellowRedCard -> {
             Icon(
-                painter = painterResource(com.zeyadmamoun.matchdetails.R.drawable.ic_card_yellow_red),
+                painter = painterResource(R.drawable.ic_card_yellow_red),
                 contentDescription = "Second Yellow Card",
                 tint = Color.Unspecified,
                 modifier = Modifier.size(16.dp)
@@ -308,7 +307,7 @@ private fun EventIcon(event: MatchTimelineEvent) {
         }
         event.isRedCard -> {
             Icon(
-                painter = painterResource(com.zeyadmamoun.matchdetails.R.drawable.ic_card_red),
+                painter = painterResource(R.drawable.ic_card_red),
                 contentDescription = "Red Card",
                 tint = Color.Unspecified,
                 modifier = Modifier.size(16.dp)
@@ -316,7 +315,7 @@ private fun EventIcon(event: MatchTimelineEvent) {
         }
         event.isYellowCard -> {
             Icon(
-                painter = painterResource(com.zeyadmamoun.matchdetails.R.drawable.ic_card_yellow),
+                painter = painterResource(R.drawable.ic_card_yellow),
                 contentDescription = "Yellow Card",
                 tint = Color.Unspecified,
                 modifier = Modifier.size(16.dp)
@@ -324,7 +323,7 @@ private fun EventIcon(event: MatchTimelineEvent) {
         }
         event.isSubstitution -> {
             Icon(
-                painter = painterResource(com.zeyadmamoun.matchdetails.R.drawable.ic_substitute),
+                painter = painterResource(R.drawable.ic_substitute),
                 contentDescription = "Substitution",
                 tint = Color.Unspecified,
                 modifier = Modifier.size(16.dp)
@@ -379,14 +378,17 @@ private fun EventContent(event: MatchTimelineEvent, isHome: Boolean) {
             // Player Name + Minute
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = if (isHome) Arrangement.End else Arrangement.Start
+                horizontalArrangement = if (isHome) Arrangement.End else Arrangement.Start,
+                modifier = Modifier.fillMaxWidth()
             ) {
                 if (isHome) {
                     Text(
                         text = event.playerName.ifBlank { event.text },
                         style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false),
+                        textAlign = TextAlign.End
                     )
                     Spacer(Modifier.width(6.dp))
                     MinuteBadge(minute = event.minute)
@@ -397,7 +399,9 @@ private fun EventContent(event: MatchTimelineEvent, isHome: Boolean) {
                         text = event.playerName.ifBlank { event.text },
                         style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false),
+                        textAlign = TextAlign.Start
                     )
                 }
             }
@@ -440,7 +444,9 @@ private fun MinuteBadge(minute: String) {
     Text(
         text = formatted,
         style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
-        color = MaterialTheme.colorScheme.primary
+        color = MaterialTheme.colorScheme.primary,
+        maxLines = 1,
+        softWrap = false
     )
 }
 
@@ -550,7 +556,8 @@ fun buildTimelineDisplayItems(
     }
 
     // If match is finished or second half started but no event past 45 yet
-    if (!htInserted && (matchDetails.isCompleted || matchDetails.currentMinute.takeWhile { it.isDigit() }.toIntOrNull() ?: 0 > 45)) {
+    if (!htInserted && (matchDetails.isCompleted || (matchDetails.currentMinute.takeWhile { it.isDigit() }
+            .toIntOrNull() ?: 0) > 45)) {
         result.add(TimelineDisplayItem.PeriodDividerItem("HT", "Half Time"))
     }
 

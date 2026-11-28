@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -60,7 +61,7 @@ fun MatchRecord(
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
-                .width(32.dp)
+                .width(24.dp)
                 .height(18.dp)
                 .clip(RoundedCornerShape(4.dp))
                 .background(
@@ -72,7 +73,7 @@ fun MatchRecord(
             Text(
                 text = match.status.toDisplayBadge(),
                 style = MaterialTheme.typography.labelSmall.copy(
-                    fontSize = 8.sp,
+                    fontSize = 6.sp,
                     fontWeight = FontWeight.Bold
                 ),
                 maxLines = 1,
@@ -109,16 +110,18 @@ fun MatchRecord(
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
-                .width(44.dp)
-                .height(22.dp)
+                .padding(horizontal = 4.dp)
+                .widthIn(min = 44.dp)
+                .height(20.dp)
                 .clip(RoundedCornerShape(4.dp))
                 .background(color = MaterialTheme.colorScheme.primary)
-                .padding(horizontal = 2.dp)
+                .padding(horizontal = 8.dp)
         ) {
             Text(
                 text = scoreText,
                 color = MaterialTheme.colorScheme.onPrimary,
                 style = MaterialTheme.typography.labelSmall.copy(
+                    fontSize = 10.sp,
                     fontWeight = FontWeight.Bold
                 ),
                 maxLines = 1,

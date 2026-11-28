@@ -128,7 +128,7 @@ class MatchSummaryMapperTest {
 
         assertTrue(result.kickoffTime.isNotBlank())
         assertEquals(result.kickoffTime, result.matchTime)
-        assertTrue(result.kickoffTime.matches(Regex("\\d{2}:\\d{2}")))
+        assertTrue(result.kickoffTime.matches(Regex("""\d{1,2}:\d{2}(?:\s?(?:AM|PM))?""")))
     }
 
     @Test

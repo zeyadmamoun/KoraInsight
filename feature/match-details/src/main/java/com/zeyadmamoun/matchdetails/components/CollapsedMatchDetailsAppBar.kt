@@ -11,11 +11,18 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -23,7 +30,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.zeyadmamoun.core.R
 import com.zeyadmamoun.data.model.summary.MatchDetails
 import com.zeyadmamoun.data.model.summary.toMatchScore
 
@@ -40,13 +46,10 @@ fun CollapsedMatchDetailsAppBar(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Spacer(Modifier.weight(0.5f))
-        // home team logo
-        AsyncImage(
-            model = matchDetails.homeTeamLogo.ifBlank { "https://media.api-sports.io/football/teams/40.png" },
-            placeholder = painterResource(R.drawable.flag),
-            contentDescription = null,
-            contentScale = ContentScale.Fit,
-            modifier = Modifier.size(36.dp)
+        // Home team logo with fallback
+        CollapsedTeamLogo(
+            logoUrl = matchDetails.homeTeamLogo,
+            teamName = matchDetails.homeTeamDisplayName.ifBlank { matchDetails.homeTeamName }
         )
         Spacer(Modifier.weight(0.5f))
         // match score / kickoff time
@@ -58,17 +61,62 @@ fun CollapsedMatchDetailsAppBar(
             )
         )
         Spacer(Modifier.weight(0.5f))
-        //away team logo
-        AsyncImage(
-            model = matchDetails.awayTeamLogo.ifBlank { "https://media.api-sports.io/football/teams/40.png" },
-            placeholder = painterResource(R.drawable.flag),
-            contentDescription = null,
-            contentScale = ContentScale.Fit,
-            modifier = Modifier.size(36.dp)
+        // Away team logo with fallback
+        CollapsedTeamLogo(
+            logoUrl = matchDetails.awayTeamLogo,
+            teamName = matchDetails.awayTeamDisplayName.ifBlank { matchDetails.awayTeamName }
         )
         Spacer(Modifier.weight(1f))
         if (matchDetails.isLive) {
             MatchMinuteIndicator(minute = matchDetails.currentMinute)
+        }
+    }
+}
+
+/**
+ * Renders a club logo in the collapsed app bar, gracefully falling back to
+ * a clean circular badge with the club's initial (or a soccer icon) if
+ * the remote logo URL is missing or download fails.
+ */
+@Composable
+private fun CollapsedTeamLogo(
+    logoUrl: String,
+    teamName: String,
+    modifier: Modifier = Modifier
+) {
+    var isError by remember(logoUrl) { mutableStateOf(false) }
+
+    if (logoUrl.isNotBlank() && !isError) {
+        AsyncImage(
+            model = logoUrl,
+            contentDescription = teamName,
+            contentScale = ContentScale.Fit,
+            onError = { isError = true },
+            modifier = modifier.size(36.dp)
+        )
+    } else {
+        Box(
+            modifier = modifier
+                .size(36.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.surfaceVariant),
+            contentAlignment = Alignment.Center
+        ) {
+            val initial = teamName.trim().take(1).uppercase()
+            if (initial.isNotBlank()) {
+                Text(
+                    text = initial,
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.primary
+                )
+            } else {
+                Icon(
+                    painter = painterResource(com.zeyadmamoun.matchdetails.R.drawable.ic_football),
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }

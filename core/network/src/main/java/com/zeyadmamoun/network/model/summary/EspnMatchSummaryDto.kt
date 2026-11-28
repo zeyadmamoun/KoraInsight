@@ -176,14 +176,52 @@ data class EspnSummaryGameInfoDto(
     val venue: EspnSummaryVenueDto? = null,
     @SerialName("attendance")
     val attendance: Int? = null,
+    @SerialName("officials")
+    val officials: List<EspnSummaryOfficialDto> = emptyList(),
+    @SerialName("tickets")
+    val tickets: List<EspnSummaryTicketDto> = emptyList(),
+)
+
+@Serializable
+data class EspnSummaryOfficialDto(
+    @SerialName("fullName")
+    val fullName: String? = null,
+    @SerialName("displayName")
+    val displayName: String? = null,
+    @SerialName("order")
+    val order: Int? = null,
+)
+
+@Serializable
+data class EspnSummaryTicketDto(
+    @SerialName("summary")
+    val summary: String? = null,
+    @SerialName("description")
+    val description: String? = null,
+    @SerialName("links")
+    val links: List<EspnSummaryLinkDto> = emptyList(),
+)
+
+@Serializable
+data class EspnSummaryLinkDto(
+    @SerialName("href")
+    val href: String? = null,
+    @SerialName("text")
+    val text: String? = null,
 )
 
 @Serializable
 data class EspnSummaryVenueDto(
     @SerialName("fullName")
     val fullName: String? = null,
+    @SerialName("shortName")
+    val shortName: String? = null,
     @SerialName("address")
     val address: EspnSummaryAddressDto? = null,
+    @SerialName("capacity")
+    val capacity: Int? = null,
+    @SerialName("images")
+    val images: List<EspnSummaryLogoDto> = emptyList(),
 )
 
 @Serializable

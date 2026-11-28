@@ -2,13 +2,13 @@ package com.zeyadmamoun.leagues.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.zeyadmamoun.core.common.result.NetworkStatus
 import com.zeyadmamoun.core.common.result.Result
 import com.zeyadmamoun.data.model.scoreboard.LeagueSlug
 import com.zeyadmamoun.data.model.scoreboard.Match
 import com.zeyadmamoun.data.model.standings.LeagueStandings
 import com.zeyadmamoun.data.repository.LeaguesRepository
 import com.zeyadmamoun.data.repository.MatchesRepository
-import com.zeyadmamoun.leagues.ui.utils.LeaguesNetworkStatus
 import com.zeyadmamoun.leagues.ui.utils.StandingsCardData
 import com.zeyadmamoun.leagues.ui.utils.toCardLeagues
 import com.zeyadmamoun.leagues.ui.utils.toCardStandings
@@ -38,7 +38,7 @@ class LeaguesViewModel @Inject constructor(
             leaguesRepository.getLeagueSlugs().collect { result ->
                 when (result) {
                     is Result.Loading -> {
-                        _leaguesUiState.update { it.copy(networkStatus = LeaguesNetworkStatus.Loading) }
+                        _leaguesUiState.update { it.copy(networkStatus = NetworkStatus.Loading) }
                     }
 
                     is Result.Success -> {
@@ -53,7 +53,7 @@ class LeaguesViewModel @Inject constructor(
                     is Result.Error -> {
                         _leaguesUiState.update {
                             it.copy(
-                                networkStatus = LeaguesNetworkStatus.Error(
+                                networkStatus = NetworkStatus.Error(
                                     result.message ?: "Failed to fetch leagues"
                                 )
                             )
@@ -69,7 +69,7 @@ class LeaguesViewModel @Inject constructor(
             leaguesRepository.getStandingsForLeagues(leagueSlugs).collect { result ->
                 when (result) {
                     is Result.Loading -> {
-                        _leaguesUiState.update { it.copy(networkStatus = LeaguesNetworkStatus.Loading) }
+                        _leaguesUiState.update { it.copy(networkStatus = NetworkStatus.Loading) }
                     }
                     is Result.Success -> {
                         val cardLeagues = leagueSlugs.toCardLeagues()
@@ -80,14 +80,14 @@ class LeaguesViewModel @Inject constructor(
                                     cardLeagues = cardLeagues,
                                     standings = result.data.toCardStandings(cardLeagues)
                                 ),
-                                networkStatus = LeaguesNetworkStatus.Success
+                                networkStatus = NetworkStatus.Success
                             )
                         }
                     }
                     is Result.Error -> {
                         _leaguesUiState.update {
                             it.copy(
-                                networkStatus = LeaguesNetworkStatus.Error(
+                                networkStatus = NetworkStatus.Error(
                                     result.message ?: "Failed to fetch standings"
                                 )
                             )
@@ -119,5 +119,5 @@ data class LeaguesScreenState(
     val standings: List<LeagueStandings> = emptyList(),
     val standingsCardData: StandingsCardData? = null,
     val uclMatches: List<Match> = emptyList(),
-    val networkStatus: LeaguesNetworkStatus = LeaguesNetworkStatus.Loading
+    val networkStatus: NetworkStatus = NetworkStatus.Loading
 )
