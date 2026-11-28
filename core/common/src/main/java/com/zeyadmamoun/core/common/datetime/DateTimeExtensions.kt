@@ -163,3 +163,25 @@ fun currentFormattedTime(use12Hour: Boolean = true): String {
     }
 }
 
+/**
+ * Formats an [Instant] as a compact relative timestamp such as `"Just now"`, `"12m ago"`,
+ * `"2h ago"`, `"3d ago"`, or `"Nov 28"` for items older than 7 days.
+ */
+@OptIn(ExperimentalTime::class)
+fun Instant.toRelativeTimeAgo(
+    now: Instant = Clock.System.now(),
+    timeZone: TimeZone = TimeZone.currentSystemDefault()
+): String {
+    val diffSeconds = (now.epochSeconds - this.epochSeconds).coerceAtLeast(0L)
+    val minutes = diffSeconds / 60L
+    val hours = minutes / 60L
+    val days = hours / 24L
+    return when {
+        minutes < 1L -> "Just now"
+        hours < 1L -> "${minutes}m ago"
+        days < 1L -> "${hours}h ago"
+        days < 7L -> "${days}d ago"
+        else -> toLocalDateTime(timeZone).date.toChipString().substringAfter(", ")
+    }
+}
+

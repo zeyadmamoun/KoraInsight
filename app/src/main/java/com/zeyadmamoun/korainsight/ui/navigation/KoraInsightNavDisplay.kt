@@ -12,6 +12,8 @@ import com.zeyadmamoun.fixtures.navigation.matchesEntryProvider
 import com.zeyadmamoun.leagues.leaguesEntryProvider
 import com.zeyadmamoun.matchdetails.navigation.MatchDetailsRoute
 import com.zeyadmamoun.matchdetails.navigation.matchDetailsEntryProvider
+import com.zeyadmamoun.news.navigation.ArticleDetailsRoute
+import com.zeyadmamoun.news.navigation.articleDetailsEntryProvider
 import com.zeyadmamoun.news.navigation.newsEntryProvider
 import com.zeyadmamoun.profile.navigation.profileEntryProvider
 
@@ -36,7 +38,20 @@ fun KoraInsightNavDisplay(
             )
             leaguesEntryProvider()
             profileEntryProvider()
-            newsEntryProvider()
+            newsEntryProvider(
+                onArticleClick = { articleId, leagueName ->
+                    backStack.add(
+                        ArticleDetailsRoute(articleId = articleId, leagueName = leagueName)
+                    )
+                }
+            )
+            articleDetailsEntryProvider(
+                onBackClick = {
+                    if (backStack.size > 1) {
+                        backStack.removeAt(backStack.size - 1)
+                    }
+                }
+            )
             matchDetailsEntryProvider(
                 onBackClick = {
                     if (backStack.size > 1) {
